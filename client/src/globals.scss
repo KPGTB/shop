@@ -1,0 +1,36 @@
+:root {
+	--bg-color: #ffffff;
+	--bg-accent: #ebebeb;
+
+	--text-color: black;
+	--text-accent: rgb(99, 98, 98);
+
+	--accent: #8ec54e;
+}
+
+body[data-theme="dark"] {
+	--bg-color: #1f1e1e;
+	--bg-accent: #1b1b1b;
+
+	--text-color: white;
+	--text-accent: rgb(207, 207, 207);
+
+	--accent: #2290cf;
+}
+
+body {
+	margin: 0;
+	font-family: system-ui;
+
+	transition: background-color 0.5s ease-out;
+	background-color: var(--bg-color);
+}
+
+* {
+	color: var(--text-color);
+}
+
+main {
+	min-height: calc(100vh - 8vh);
+	min-height: calc(100dvh - 8vh);
+}

@@ -1,0 +1,109 @@
+.footer {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-areas:
+		"info links follow"
+		"copy copy copy";
+
+	background-color: var(--bg-accent);
+	padding-inline: 3rem;
+}
+
+.info {
+	grid-area: info;
+	font-style: italic;
+}
+
+.links {
+	grid-area: links;
+	text-align: center;
+
+	ul {
+		list-style-type: none;
+		list-style-position: inside;
+		padding: 0;
+		margin: 0;
+	}
+
+	a {
+		all: unset;
+		flex: 0;
+		display: inline-block;
+
+		cursor: pointer;
+		font-style: italic;
+
+		transition: color 0.2s ease;
+
+		&:hover {
+			text-decoration: underline;
+			color: var(--text-accent);
+		}
+	}
+}
+
+.follow {
+	grid-area: follow;
+	text-align: right;
+
+	form {
+		margin-left: auto;
+		border-radius: 0.5rem;
+		border: solid 1px var(--text-color);
+		background-color: var(--bg-color);
+		width: fit-content;
+		height: 2rem;
+		padding: 0;
+		display: flex;
+
+		input {
+			all: unset;
+			text-align: left;
+			width: 15vw;
+			padding-inline: 0.5rem;
+			height: 100%;
+			border-right: solid 1px var(--text-color);
+		}
+
+		button {
+			all: unset;
+			cursor: pointer;
+			width: 3rem;
+			height: 100%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+			font-size: 1.25rem;
+		}
+	}
+}
+
+.media {
+	display: flex;
+	justify-content: end;
+	gap: 2rem;
+
+	a {
+		all: unset;
+		display: inline-block;
+
+		font-size: 1.5rem;
+		cursor: pointer;
+		transition: transform 0.2s ease;
+
+		&:hover {
+			transform: scale(1.15);
+			svg * {
+				color: var(--text-accent);
+			}
+		}
+	}
+}
+
+.copy {
+	grid-area: copy;
+	text-align: center;
+	font-style: italic;
+	padding: 1rem 0;
+}

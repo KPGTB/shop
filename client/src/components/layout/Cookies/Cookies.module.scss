@@ -1,0 +1,47 @@
+.cookies {
+	display: none;
+
+	position: fixed;
+	bottom: 2rem;
+	right: -25vw;
+	width: 20vw;
+	padding: 1rem;
+	border-radius: 0.75rem;
+	font-style: italic;
+
+	background-color: var(--accent);
+
+	transition-property: display right;
+	transition-duration: 0.75s;
+	transition-behavior: allow-discrete;
+	transition-timing-function: ease-out;
+
+	&.show {
+		display: block;
+		right: 2rem;
+
+		@starting-style {
+			right: -25vw;
+		}
+	}
+
+	section {
+		display: flex;
+		justify-content: end;
+		margin-top: 0.5rem;
+	}
+
+	button {
+		all: unset;
+		font-weight: bold;
+		font-style: normal;
+		transition: all 0.1s ease;
+		cursor: pointer;
+
+		&:hover {
+			color: var(--text-accent);
+			transform: scale(1.1);
+			text-decoration: underline;
+		}
+	}
+}

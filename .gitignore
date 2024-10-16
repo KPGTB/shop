@@ -10,8 +10,8 @@ server/.project
 server/.settings
 server/.springBeans
 server/.sts4-cache
-server/
-server/### IntelliJ IDEA ###
+
+### IntelliJ IDEA ###
 server/.idea
 server/*.iws
 server/*.iml

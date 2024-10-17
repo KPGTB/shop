@@ -5,8 +5,7 @@ import AccessibilityProvider from "../components/layout/Accessibility/Accessibil
 import Cookies from "../components/layout/Cookies/Cookies"
 import Footer from "../components/layout/Footer/Footer"
 import Header from "../components/layout/Header/Header"
-
-type Theme = "dark" | "light"
+import ThemeContext, {Theme} from "../context/ThemeContect"
 
 const Layout = () => {
 	const [theme, setThemeState] = useState<Theme>("light")
@@ -24,17 +23,16 @@ const Layout = () => {
 
 	return (
 		<>
-			<Header
-				theme={theme}
-				setTheme={setTheme}
-			/>
-			<main>
-				<Outlet />
-			</main>
-			<Footer />
+			<ThemeContext.Provider value={theme}>
+				<Header setTheme={setTheme} />
+				<main>
+					<Outlet />
+				</main>
+				<Footer />
 
-			<Cookies />
-			<AccessibilityProvider />
+				<Cookies />
+				<AccessibilityProvider />
+			</ThemeContext.Provider>
 		</>
 	)
 }

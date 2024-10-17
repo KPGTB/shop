@@ -1,18 +1,16 @@
+import {useContext} from "react"
 import {FaRegUserCircle} from "react-icons/fa"
 import {FaCartShopping} from "react-icons/fa6"
 import {MdModeNight, MdWbSunny} from "react-icons/md"
 import {Link} from "react-router-dom"
 
-import {Theme} from "../../../pages/layout"
+import ThemeContext from "../../../context/ThemeContect"
+import {Theme} from "../../../pages/Layout"
 import styles from "./Header.module.scss"
 
-const Header = ({
-	theme,
-	setTheme,
-}: {
-	theme: string
-	setTheme: (newTheme: Theme) => void
-}) => {
+const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
+	const theme = useContext<Theme>(ThemeContext)
+
 	return (
 		<header className={styles.header}>
 			<Link
@@ -27,8 +25,8 @@ const Header = ({
 
 			<nav>
 				<section className={styles.links}>
-					<Link to="/shop">E-Books</Link>
-					<Link to="/shop">Ranks</Link>
+					<Link to="/shop/ebooks">E-Books</Link>
+					<Link to="/shop/ranks">Ranks</Link>
 					<Link to="/contact">Contact Us</Link>
 				</section>
 				<section className={styles.manage}>

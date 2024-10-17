@@ -91,3 +91,33 @@
 		text-align: center;
 	}
 }
+
+.apiError {
+	position: sticky;
+	top: 0;
+	left: 0;
+	background-color: rgb(240, 115, 115);
+	color: white;
+	width: 100%;
+	padding: 1vh 0;
+	font-weight: bold;
+	text-align: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
+
+	svg * {
+		color: white;
+	}
+
+	transition-property: height font-size padding-bottom;
+	transition-duration: 0.1s;
+	transition-behavior: allow-discrete;
+
+	@starting-style {
+		height: 1px;
+		font-size: 1px;
+		padding-bottom: 0;
+	}
+}

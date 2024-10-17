@@ -1,5 +1,8 @@
+import "react-toastify/dist/ReactToastify.css"
+
 import {useCallback, useEffect, useState} from "react"
 import {Outlet} from "react-router-dom"
+import {ToastContainer} from "react-toastify"
 
 import AccessibilityProvider from "../components/layout/Accessibility/AccessibilityProvider"
 import Cookies from "../components/layout/Cookies/Cookies"
@@ -32,6 +35,7 @@ const Layout = () => {
 
 				<Cookies />
 				<AccessibilityProvider />
+				<ToastContainer />
 			</ThemeContext.Provider>
 		</>
 	)

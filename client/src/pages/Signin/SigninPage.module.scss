@@ -1,0 +1,110 @@
+.main {
+	width: 100%;
+	min-height: inherit;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.container {
+	display: grid;
+	grid-template-columns: 1.5fr 1fr;
+	grid-template-rows: 1fr;
+
+	border-radius: 1rem;
+	box-shadow: 2px 2px 8px 0 var(--text-accent);
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	padding: 4rem;
+	border-radius: 1rem 0 0 1rem;
+	background-color: var(--bg-accent);
+
+	h1 {
+		font-size: 2rem;
+		margin-top: 0;
+	}
+
+	& > label {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		font-size: 1.1rem;
+		font-style: italic;
+	}
+
+	aside > label {
+		font-size: 1.1rem;
+		font-style: italic;
+	}
+
+	p {
+		color: var(--text-accent);
+		font-style: italic;
+		font-size: 0.75rem;
+
+		display: flex;
+		justify-content: space-evenly;
+		align-items: center;
+	}
+
+	p a {
+		all: unset;
+		display: inline-block;
+
+		cursor: pointer;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	input[type="email"],
+	input[type="password"] {
+		all: unset;
+		background-color: var(--bg-color);
+		border: solid 1px var(--text-color);
+		border-radius: 0.5rem;
+		padding: 0.25rem;
+		width: 15vw;
+		margin-bottom: 1rem;
+	}
+
+	button {
+		all: unset;
+		cursor: pointer;
+		border: solid 2px var(--accent);
+		border-radius: 0.5rem;
+		padding: 0.5rem;
+		text-align: center;
+		font-weight: bold;
+		background-color: var(--bg-color);
+		margin-top: 1rem;
+	}
+}
+
+.extra {
+	background-color: var(--accent);
+	width: 100%;
+	height: 100%;
+	border-radius: 0 1rem 1rem 0;
+	opacity: 0.5;
+}
+
+.type {
+	padding-bottom: 0.5rem;
+	margin-bottom: 0.5rem;
+	position: relative;
+
+	&::after {
+		content: "";
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		border-bottom: dashed 1px var(--text-accent);
+		opacity: 0.5;
+	}
+}

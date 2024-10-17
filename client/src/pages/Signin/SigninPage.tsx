@@ -11,7 +11,11 @@ const SigninPage = () => {
 	return (
 		<section className={styles.main}>
 			<article className={styles.container}>
-				<form className={styles.form}>
+				<form
+					className={styles.form}
+					method="POST"
+					action="https://localhost:8080/login"
+				>
 					<h1>Sign In</h1>
 
 					<aside className={styles.type}>
@@ -41,7 +45,7 @@ const SigninPage = () => {
 								<MdEmail /> E-Mail
 							</label>
 							<input
-								name="email"
+								name="username"
 								type="email"
 								id="email"
 							/>
@@ -60,7 +64,7 @@ const SigninPage = () => {
 					/>
 					<aside>
 						<input
-							name="remember"
+							name="remember-me"
 							type="checkbox"
 							id="remember"
 						/>{" "}

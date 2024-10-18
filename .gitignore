@@ -2,6 +2,8 @@ server/target/
 !server/**/src/main/**/target/
 !server/**/src/test/**/target/
 
+server/config.properties
+
 ### STS ###
 server/.apt_generated
 server/.classpath

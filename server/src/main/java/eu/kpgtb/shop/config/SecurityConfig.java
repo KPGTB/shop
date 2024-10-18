@@ -6,12 +6,17 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -26,18 +31,30 @@ public class SecurityConfig implements WebMvcConfigurer {
     private Properties properties;
 
     @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider::authenticate;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {return PasswordEncoderFactories.createDelegatingPasswordEncoder();}
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests((req) -> req
-                .requestMatchers("/login").anonymous()
-                .requestMatchers("/logout", "/ping2").authenticated()
+                .requestMatchers("/auth/signin").anonymous()
+                .requestMatchers("/auth/signout").authenticated()
                 .anyRequest().permitAll()
             ).formLogin((form) -> form
-                .loginPage("/login")
+                .loginPage("/auth/signin")
+                .usernameParameter("email")
                 .defaultSuccessUrl(properties.getFrontendUrl() + "/customer")
                 .failureUrl(properties.getFrontendUrl() + "/signin?error")
             ).logout(logout -> logout
-                        .logoutUrl("/logout")
+                        .logoutUrl("/auth/signout")
                         .logoutSuccessUrl(properties.getFrontendUrl())
                         .deleteCookies("JSESSIONID")
                         .deleteCookies("remember-me")
@@ -53,9 +70,14 @@ public class SecurityConfig implements WebMvcConfigurer {
         UserDetails user = User.withDefaultPasswordEncoder()
                 .username("admin@kpgtb.eu")
                 .password("admin")
+                .roles("USER")
+                .build();
+        UserDetails admin = User.withDefaultPasswordEncoder()
+                .username(properties.getBusinessAccountEmail())
+                .password("business")
                 .roles("ADMIN")
                 .build();
-        return new InMemoryUserDetailsManager(user);
+        return new InMemoryUserDetailsManager(user,admin);
     }
 
     @Bean

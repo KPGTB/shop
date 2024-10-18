@@ -52,9 +52,20 @@ public class PropertiesConfig {
             writer.println("server.ssl.key-password=skipper");
 
             writer.println("# ");
+            writer.println("# SMTP Configuration");
+            writer.println("# ");
+            writer.println("spring.mail.host=");
+            writer.println("spring.mail.port=465");
+            writer.println("spring.mail.username=");
+            writer.println("spring.mail.password=");
+            writer.println("spring.mail.properties.mail.smtp.auth=true");
+            writer.println("spring.mail.properties.mail.smtp.starttls.enable=true");
+
+            writer.println("# ");
             writer.println("# Shop Configuration");
             writer.println("# ");
             writer.println("eu.kpgtb.frontend-url=http://localhost:5173");
+            writer.println("eu.kpgtb.business-account-email=Thn8smFY2F24kvbxYPF6ds@1pNCK3tfSf6wGwr7XVwDSh7ZHY2");
             writer.close();
         }
 

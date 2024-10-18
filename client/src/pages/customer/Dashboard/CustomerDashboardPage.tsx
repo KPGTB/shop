@@ -4,7 +4,7 @@ const ClientDashboardPage = () => {
 	const [data, setData] = useState<string>("nothing")
 
 	useEffect(() => {
-		fetch("https://localhost:8080/ping2", {
+		fetch(`${API_URL}/ping`, {
 			method: "POST",
 			credentials: "include",
 		})
@@ -19,7 +19,7 @@ const ClientDashboardPage = () => {
 			<h1>{data}</h1>
 			<form
 				method="POST"
-				action="https://localhost:8080/logout"
+				action={`${API_URL}/auth/signout`}
 			>
 				<button>Logout</button>
 			</form>

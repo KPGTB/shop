@@ -35,7 +35,7 @@ const SigninPage = () => {
 				<form
 					className={styles.form}
 					method="POST"
-					action="https://localhost:8080/login"
+					action="https://localhost:8080/auth/signin"
 				>
 					<h1>Sign In</h1>
 
@@ -48,7 +48,7 @@ const SigninPage = () => {
 							checked={accType === "customer"}
 							onChange={(el) => setAccType(el.target.value)}
 						/>{" "}
-						<label htmlFor="remember">Customer</label>
+						<label htmlFor="customer">Customer</label>
 						<input
 							name="type"
 							type="radio"
@@ -57,20 +57,26 @@ const SigninPage = () => {
 							checked={accType === "business"}
 							onChange={(el) => setAccType(el.target.value)}
 						/>{" "}
-						<label htmlFor="remember">Business</label>
+						<label htmlFor="business">Business</label>
 					</aside>
 
-					{accType === "customer" && (
+					{accType === "customer" ? (
 						<>
 							<label htmlFor="email">
 								<MdEmail /> E-Mail
 							</label>
 							<input
-								name="username"
+								name="email"
 								type="email"
 								id="email"
 							/>
 						</>
+					) : (
+						<input
+							name="email"
+							type="hidden"
+							value={BUSINESS_ACCOUNT_EMAIL}
+						/>
 					)}
 
 					<label htmlFor="password">

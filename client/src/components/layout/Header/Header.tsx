@@ -18,7 +18,7 @@ const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
 		let controller = new AbortController()
 		setTimeout(() => controller.abort(), 5000)
 
-		fetch(process.env.REACT_APP_API_URL + "/ping", {
+		fetch(API_URL + "/ping", {
 			signal: controller.signal,
 		})
 			.then((res) => {

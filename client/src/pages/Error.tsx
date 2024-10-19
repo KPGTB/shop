@@ -1,4 +1,4 @@
-import {Link, useRouteError} from "react-router-dom"
+import {Link, useRouteError, useSearchParams} from "react-router-dom"
 
 import styles from "./Error.module.scss"
 
@@ -7,6 +7,15 @@ const Error = () => {
 		status?: number
 		statusText?: string
 		message?: string
+	}
+
+	const [params] = useSearchParams()
+
+	if (params.has("status") && params.has("message")) {
+		error = {
+			status: Number(params.get("status")),
+			statusText: params.get("message")!,
+		}
 	}
 
 	return (

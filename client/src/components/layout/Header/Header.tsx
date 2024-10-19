@@ -4,7 +4,8 @@ import {FaCartShopping} from "react-icons/fa6"
 import {MdError, MdModeNight, MdWbSunny} from "react-icons/md"
 import {Link} from "react-router-dom"
 
-import ThemeContext from "../../../context/ThemeContect"
+import {useAuth} from "../../../context/AuthContext"
+import ThemeContext from "../../../context/ThemeContext"
 import {Theme} from "../../../pages/Layout"
 import styles from "./Header.module.scss"
 
@@ -12,6 +13,7 @@ type ApiStatus = "loading" | "working" | "error"
 
 const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
 	const theme = useContext<Theme>(ThemeContext)
+	const [logged, user] = useAuth()
 	const [apiStatus, setApiStatus] = useState<ApiStatus>("loading")
 
 	useEffect(() => {
@@ -69,7 +71,13 @@ const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
 							<FaCartShopping />
 							<span>3</span>
 						</Link>
-						<Link to="/signin">
+						<Link
+							to={
+								user === undefined
+									? "/signin"
+									: `/${user.role.toLowerCase()}/dashboard`
+							}
+						>
 							<FaRegUserCircle />
 						</Link>
 					</section>

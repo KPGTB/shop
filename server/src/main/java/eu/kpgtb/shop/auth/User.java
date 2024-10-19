@@ -1,17 +1,26 @@
 package eu.kpgtb.shop.auth;
 
 import eu.kpgtb.shop.data.entity.UserEntity;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Date;
 import java.util.Arrays;
 import java.util.Collection;
 
-@AllArgsConstructor
 public class User implements UserDetails {
     private UserEntity entity;
+
+    @Getter private PrivateUserInfo privateUserInfo;
+    @Getter private PublicUserInfo publicUserInfo;
+
+    public User(UserEntity entity) {
+        this.entity = entity;
+        this.privateUserInfo = new PrivateUserInfo(entity.getEmail(),entity.getRole(), entity.getName(),entity.getSurname(),entity.getGender(),entity.getBirthDate());
+        this.publicUserInfo = new PublicUserInfo(entity.getName());
+    }
 
     @Override
     public String getPassword() {
@@ -42,4 +51,8 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+
+    public record PrivateUserInfo(String email, UserEntity.UserRole role, String name, String surname, UserEntity.Gender gender, Date birthDate) {}
+    public record PublicUserInfo(String name) {}
 }

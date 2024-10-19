@@ -4,7 +4,7 @@ import {RiLockPasswordFill} from "react-icons/ri"
 import {Link, useSearchParams} from "react-router-dom"
 import {Bounce, toast} from "react-toastify"
 
-import ThemeContext from "../../context/ThemeContect"
+import ThemeContext from "../../context/ThemeContext"
 import {Theme} from "../Layout"
 import styles from "./SigninPage.module.scss"
 

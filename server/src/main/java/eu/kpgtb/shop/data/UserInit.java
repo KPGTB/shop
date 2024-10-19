@@ -8,6 +8,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.sql.Date;
+import java.time.Instant;
+
 @Component
 public class UserInit implements CommandLineRunner {
     @Autowired
@@ -24,7 +27,11 @@ public class UserInit implements CommandLineRunner {
         this.userRepository.save(new UserEntity(
             this.properties.getBusinessAccountEmail(),
             this.passwordEncoder.encode(this.properties.getBusinessAccountDefaultPassword()),
-                UserEntity.UserRole.BUSINESS
+            UserEntity.UserRole.BUSINESS,
+            "System",
+            "Administrator",
+            UserEntity.Gender.OTHER,
+            new Date(Instant.now().toEpochMilli())
         ));
     }
 }

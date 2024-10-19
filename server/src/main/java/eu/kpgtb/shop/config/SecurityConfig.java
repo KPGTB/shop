@@ -10,7 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -29,12 +31,12 @@ public class SecurityConfig implements WebMvcConfigurer {
         return http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests((req) -> req
                 .requestMatchers("/auth/signin").anonymous()
-                .requestMatchers("/auth/signout").authenticated()
+                .requestMatchers("/auth/*").authenticated()
                 .anyRequest().permitAll()
             ).formLogin((form) -> form
                 .loginPage("/auth/signin")
                 .usernameParameter("email")
-                .defaultSuccessUrl(this.properties.getFrontendUrl() + "/customer")
+                .defaultSuccessUrl(this.properties.getFrontendUrl())
                 .failureUrl(this.properties.getFrontendUrl() + "/signin?error")
             ).logout(logout -> logout
                         .logoutUrl("/auth/signout")
@@ -45,7 +47,10 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .key(this.properties.getRememberMeKey())
                         .tokenValiditySeconds(7 * 24 * 60 * 60)
                         .useSecureCookie(true)
-            ).build();
+            ).exceptionHandling(handler -> handler
+                        .authenticationEntryPoint(new Http403ForbiddenEntryPoint()) // Throw 403 instead of redirecting to login page
+            ).requestCache(RequestCacheConfigurer::disable) // Don't redirect to previous unauthenticated request after authentication
+            .build();
     }
 
     @Override

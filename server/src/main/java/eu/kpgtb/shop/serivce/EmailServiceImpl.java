@@ -24,7 +24,11 @@ public class EmailServiceImpl implements IEmailService{
         MimeMessageHelper helper = new MimeMessageHelper(mime,true);
 
         helper.setFrom(this.properties.getEmailFrom());
-        helper.setTo(data.getTo().toArray(new String[0]));
+        if(data.isUseBcc()) {
+            helper.setBcc(data.getTo().toArray(new String[0]));
+        } else {
+            helper.setTo(data.getTo().toArray(new String[0]));
+        }
         helper.setSubject(data.getSubject());
         helper.setText(data.getContent(),true);
 

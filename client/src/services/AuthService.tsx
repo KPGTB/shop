@@ -4,17 +4,21 @@ class AuthService {
 	user: User | undefined
 
 	fetchUser = async () => {
-		const res = await fetch(API_URL + "/auth/info", {
-			credentials: "include",
-		})
+		try {
+			const res = await fetch(API_URL + "/auth/info", {
+				credentials: "include",
+			})
 
-		if (res.status !== 200) {
+			if (res.status !== 200) {
+				this.user = undefined
+				return
+			}
+
+			const json = await res.json()
+			this.user = json.data
+		} catch (error) {
 			this.user = undefined
-			return
 		}
-
-		const json = await res.json()
-		this.user = json.data
 	}
 
 	getUser = () => this.user

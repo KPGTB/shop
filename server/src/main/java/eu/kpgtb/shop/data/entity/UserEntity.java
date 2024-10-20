@@ -33,9 +33,9 @@ public class UserEntity extends BaseEntity{
         CUSTOMER("ROLE_CUSTOMER"),
         BUSINESS("ROLE_BUSINESS");
 
-        private final String id;
-        UserRole(String id) {
-            this.id = id;
+        private final String authority;
+        UserRole(String authority) {
+            this.authority = authority;
         }
     }
 }

@@ -1,5 +1,6 @@
 package eu.kpgtb.shop.config;
 
+import eu.kpgtb.shop.data.entity.UserEntity;
 import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,6 +8,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -30,8 +32,20 @@ public class SecurityConfig implements WebMvcConfigurer {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests((req) -> req
+                // Authentication
                 .requestMatchers("/auth/signin").anonymous()
                 .requestMatchers("/auth/*").authenticated()
+                // Category Controller
+                .requestMatchers(HttpMethod.POST,"/category").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                .requestMatchers(HttpMethod.PUT,"/category").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                .requestMatchers(HttpMethod.DELETE,"/category").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                // Product Controller
+                .requestMatchers(HttpMethod.POST, "/product/updateAll").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                .requestMatchers(HttpMethod.POST, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                .requestMatchers(HttpMethod.PUT, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                .requestMatchers(HttpMethod.DELETE, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                // Payment
+                .requestMatchers(HttpMethod.POST, "/payment").authenticated()
                 .anyRequest().permitAll()
             ).formLogin((form) -> form
                 .loginPage("/auth/signin")

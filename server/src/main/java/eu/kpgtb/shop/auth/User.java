@@ -10,11 +10,12 @@ import java.sql.Date;
 import java.util.Arrays;
 import java.util.Collection;
 
+@Getter
 public class User implements UserDetails {
     private UserEntity entity;
 
-    @Getter private PrivateUserInfo privateUserInfo;
-    @Getter private PublicUserInfo publicUserInfo;
+    private PrivateUserInfo privateUserInfo;
+    private PublicUserInfo publicUserInfo;
 
     public User(UserEntity entity) {
         this.entity = entity;
@@ -32,7 +33,7 @@ public class User implements UserDetails {
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Arrays.asList(new SimpleGrantedAuthority(entity.getRole().getId()));
+        return Arrays.asList(new SimpleGrantedAuthority(entity.getRole().getAuthority()));
     }
 
     @Override

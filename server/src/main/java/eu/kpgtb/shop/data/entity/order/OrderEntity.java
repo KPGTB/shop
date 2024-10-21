@@ -1,5 +1,7 @@
-package eu.kpgtb.shop.data.entity;
+package eu.kpgtb.shop.data.entity.order;
 
+import eu.kpgtb.shop.data.entity.BaseEntity;
+import eu.kpgtb.shop.data.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +13,7 @@ import java.util.List;
 @Getter @Setter
 @Builder
 @Entity(name = "shop_order")
-public class OrderEntity extends BaseEntity{
+public class OrderEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;

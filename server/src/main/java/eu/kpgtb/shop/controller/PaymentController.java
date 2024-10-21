@@ -1,6 +1,5 @@
 package eu.kpgtb.shop.controller;
 
-import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
@@ -8,16 +7,18 @@ import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
 import eu.kpgtb.shop.auth.User;
 import eu.kpgtb.shop.config.Properties;
-import eu.kpgtb.shop.data.entity.OrderEntity;
-import eu.kpgtb.shop.data.entity.OrderProductEntity;
-import eu.kpgtb.shop.data.entity.ProductEntity;
+import eu.kpgtb.shop.data.entity.order.OrderEntity;
+import eu.kpgtb.shop.data.entity.order.OrderProductEntity;
+import eu.kpgtb.shop.data.entity.order.OrderProductField;
+import eu.kpgtb.shop.data.entity.product.ProductEntity;
 import eu.kpgtb.shop.data.entity.UserEntity;
-import eu.kpgtb.shop.data.repository.OrderProductRepository;
-import eu.kpgtb.shop.data.repository.OrderRepository;
-import eu.kpgtb.shop.data.repository.ProductRepository;
+import eu.kpgtb.shop.data.entity.product.ProductField;
+import eu.kpgtb.shop.data.repository.order.OrderProductFieldRepository;
+import eu.kpgtb.shop.data.repository.order.OrderProductRepository;
+import eu.kpgtb.shop.data.repository.order.OrderRepository;
+import eu.kpgtb.shop.data.repository.product.ProductFieldRepository;
+import eu.kpgtb.shop.data.repository.product.ProductRepository;
 import eu.kpgtb.shop.util.JsonResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -27,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -51,6 +53,10 @@ public class PaymentController {
     @Autowired
     private OrderProductRepository orderProductRepository;
     @Autowired
+    private OrderProductFieldRepository orderProductFieldRepository;
+    @Autowired
+    private ProductFieldRepository productFieldRepository;
+    @Autowired
     private OrderRepository orderRepository;
 
     private final Properties properties;
@@ -64,31 +70,61 @@ public class PaymentController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> pay(PaymentBody body, Authentication authentication) throws URISyntaxException, StripeException {
+    public ResponseEntity<Void> pay(@RequestBody MultiValueMap<String,String> body, Authentication authentication) throws URISyntaxException, StripeException {
         List<SessionCreateParams.LineItem> items = new ArrayList<>();
         List<OrderProductEntity> opEntities = new ArrayList<>();
+        List<SessionCreateParams.CustomField> customFields = new ArrayList<>();
 
-        Arrays.stream(body.products
-                .replace(" ", "")
-                .split(",")).forEach(dataLine -> {
-                    String[] data = dataLine.split(":",2);
-                    int pId = Integer.parseInt(data[0]);
-                    int quantity = Integer.parseInt(data[1]);
+        Map<String,String> products = body.toSingleValueMap();
+        products.forEach((pIdStr, quantityStr) -> {
+            int pId = Integer.parseInt(pIdStr);
+            int quantity = Integer.parseInt(quantityStr);
 
-                    if(quantity < 1) return;
-                    Optional<ProductEntity> entityOpt = productRepository.findById(pId);
-                    if(entityOpt.isEmpty()) return;
-                    try {
-                        Product product = Product.retrieve(entityOpt.get().getStripeId());
-                        opEntities.add(new OrderProductEntity(entityOpt.get(), quantity));
-                        items.add(
-                                SessionCreateParams.LineItem.builder()
-                                        .setQuantity((long) quantity)
-                                        .setPrice(product.getDefaultPrice())
-                                        .build()
+            if(quantity < 1) return;
+            Optional<ProductEntity> entityOpt = productRepository.findById(pId);
+            if(entityOpt.isEmpty()) return;
+            ProductEntity entity = entityOpt.get();
+
+            try {
+                Product product = Product.retrieve(entity.getStripeId());
+                opEntities.add(new OrderProductEntity(entity, quantity, new ArrayList<>()));
+                items.add(
+                        SessionCreateParams.LineItem.builder()
+                                .setQuantity((long) quantity)
+                                .setPrice(product.getDefaultPrice())
+                                .build()
+                );
+                entity.getFields().forEach(field -> {
+                    SessionCreateParams.CustomField.Builder builder = SessionCreateParams.CustomField.builder()
+                            .setType(field.getType())
+                            .setLabel(SessionCreateParams.CustomField.Label.builder()
+                                    .setType(SessionCreateParams.CustomField.Label.Type.CUSTOM)
+                                    .setCustom(product.getName() + " - " + field.getLabel())
+                                    .build())
+                            .setKey(product.getId() + "-" + field.getId())
+                            .setOptional(field.isOptional());
+
+                    if(field.getType() == SessionCreateParams.CustomField.Type.DROPDOWN) {
+                        List<SessionCreateParams.CustomField.Dropdown.Option> options = new ArrayList<>();
+
+                        field.getOptions().forEach(option -> {
+                            options.add(SessionCreateParams.CustomField.Dropdown.Option.builder()
+                                            .setLabel(option.getLabel())
+                                            .setValue(option.getValue())
+                                    .build()
+                            );
+                        });
+
+                        builder = builder.setDropdown(SessionCreateParams.CustomField.Dropdown.builder()
+                                .addAllOption(options)
+                                .build()
                         );
-                    } catch (StripeException e) {
-                        e.printStackTrace();
+                    }
+
+                    customFields.add(builder.build());
+                });
+            } catch (StripeException e) {
+                e.printStackTrace();
             }
         });
 
@@ -117,6 +153,8 @@ public class PaymentController {
                 .setCancelUrl(FAIL_URL)
                 .setAllowPromotionCodes(true)
                 .setCustomerEmail(user != null ? user.getEmail() : null)
+                .addAllCustomField(customFields)
+                .addCustomField(SessionCreateParams.CustomField.builder().setType(SessionCreateParams.CustomField.Type.NUMERIC).build())
                 .setPhoneNumberCollection(SessionCreateParams.PhoneNumberCollection.builder().setEnabled(
                         properties.isStripeCollectPhoneNumber()
                 ).build())
@@ -230,9 +268,36 @@ public class PaymentController {
                     in.close();
 
                     orderEntity.setInvoiceNumber(invoice.getNumber());
+
+                    Map<Integer, List<OrderProductField>> fieldsData = new HashMap<>();
+
+                    session.getCustomFields().forEach(field -> {
+                        String[] key = field.getKey().split("-",2);
+                        int pId = Integer.parseInt(key[0]);
+                        int fId = Integer.parseInt(key[1]);
+
+                        Optional<ProductEntity> productEntityOpt = productRepository.findById(pId);
+                        Optional<ProductField> fieldEntityOpt = productFieldRepository.findById(fId);
+
+                        if(productEntityOpt.isEmpty() || fieldEntityOpt.isEmpty()) return;
+
+                        OrderProductField opf = new OrderProductField(
+                                fieldEntityOpt.get(),field.getText() != null ? field.getText().getValue() : null
+                        );
+                        orderProductFieldRepository.save(opf);
+                        fieldsData.putIfAbsent(pId, new ArrayList<>());
+                        fieldsData.get(pId).add(opf);
+                    });
+
+                    orderEntity.getProducts().forEach(opEntity -> {
+                        if(fieldsData.containsKey(opEntity.getProduct().getId())) {
+                            opEntity.setFields(fieldsData.get(opEntity.getProduct().getId()));
+                        }
+                        orderProductRepository.save(opEntity);
+                    });
+
                     orderRepository.save(orderEntity);
 
-                    // TODO: Download invoice and receipt
                     // TODO: Execute order
 
                     orderEntity.setStatus(OrderEntity.OrderStatus.COMPLETED);
@@ -283,7 +348,4 @@ public class PaymentController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
-
-    // ID:quantity,ID:quantity
-    record PaymentBody(String products) {}
 }

@@ -1,6 +1,6 @@
-package eu.kpgtb.shop.data.repository;
+package eu.kpgtb.shop.data.repository.order;
 
-import eu.kpgtb.shop.data.entity.OrderEntity;
+import eu.kpgtb.shop.data.entity.order.OrderEntity;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;

@@ -1,9 +1,9 @@
 package eu.kpgtb.shop.controller;
 
 import com.stripe.model.Product;
-import eu.kpgtb.shop.data.entity.Category;
-import eu.kpgtb.shop.data.repository.CategoryRepository;
-import eu.kpgtb.shop.data.repository.ProductRepository;
+import eu.kpgtb.shop.data.entity.product.Category;
+import eu.kpgtb.shop.data.repository.product.CategoryRepository;
+import eu.kpgtb.shop.data.repository.product.ProductRepository;
 import eu.kpgtb.shop.util.JsonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

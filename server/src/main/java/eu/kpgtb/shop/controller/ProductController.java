@@ -5,13 +5,13 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Price;
 import com.stripe.model.Product;
 import com.stripe.model.TaxCode;
-import com.stripe.model.TaxRate;
 import com.stripe.param.*;
 import eu.kpgtb.shop.config.Properties;
-import eu.kpgtb.shop.data.entity.Category;
-import eu.kpgtb.shop.data.entity.ProductEntity;
-import eu.kpgtb.shop.data.repository.CategoryRepository;
-import eu.kpgtb.shop.data.repository.ProductRepository;
+import eu.kpgtb.shop.data.entity.product.Category;
+import eu.kpgtb.shop.data.entity.product.ProductEntity;
+import eu.kpgtb.shop.data.entity.product.ProductField;
+import eu.kpgtb.shop.data.repository.product.CategoryRepository;
+import eu.kpgtb.shop.data.repository.product.ProductRepository;
 import eu.kpgtb.shop.util.JsonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -74,7 +74,7 @@ public class ProductController {
     }
 
     @PutMapping
-    public JsonResponse<Boolean> edit(@RequestBody ProductCreateBody body) throws StripeException {
+    public JsonResponse<Boolean> create(@RequestBody ProductCreateBody body) throws StripeException {
         Optional<Category> categoryOpt = categoryRepository.findById(body.categoryId);
         if(categoryOpt.isEmpty()) {
             return new JsonResponse<>(HttpStatus.NOT_FOUND, "Category not found");
@@ -103,7 +103,8 @@ public class ProductController {
                 properties.getStripeCurrency(),
                 body.price,
                 product.getId(),
-                categoryOpt.get()
+                categoryOpt.get(),
+                body.fields
         );
         productRepository.save(entity);
         return new JsonResponse<>(HttpStatus.CREATED, "Created");
@@ -155,6 +156,7 @@ public class ProductController {
         entity.setPrice(body.price);
         entity.setImage(body.image);
         entity.setCategory(categoryOpt.get());
+        entity.setFields(body.fields);
 
         product.update(productParams);
         productRepository.save(entity);
@@ -194,7 +196,7 @@ public class ProductController {
         return new JsonResponse<>(HttpStatus.OK, "Updated");
     }
 
-    record ProductCreateBody(String name, String description, String image, double price, String taxCode, int categoryId) {}
-    record ProductEditBody(int id, String name, String description, String image, double price,String taxCode, int categoryId) {}
+    record ProductCreateBody(String name, String description, String image, double price, String taxCode, int categoryId, List<ProductField> fields) {}
+    record ProductEditBody(int id, String name, String description, String image, double price,String taxCode, int categoryId, List<ProductField> fields) {}
     record TaxData(boolean hasMore, List<TaxCode> codes) {}
 }

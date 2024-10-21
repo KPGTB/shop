@@ -78,12 +78,27 @@ const LandingPage = () => {
 			</article>
 			<form
 				method="POST"
-				action={`${API_URL}/payment`}
+				action={`${API_URL}/payment/test`}
 			>
 				<input
-					type="text"
-					defaultValue="1:4"
-					name="products"
+					type="hidden"
+					name="p1"
+					value="3"
+				/>
+				<input
+					type="hidden"
+					name="p2"
+					value="1"
+				/>
+				<input
+					type="hidden"
+					name="p4"
+					value="6"
+				/>
+				<input
+					type="hidden"
+					name="p6"
+					value="2"
 				/>
 				<button>Test</button>
 			</form>

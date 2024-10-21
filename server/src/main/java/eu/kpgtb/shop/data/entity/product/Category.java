@@ -1,5 +1,6 @@
-package eu.kpgtb.shop.data.entity;
+package eu.kpgtb.shop.data.entity.product;
 
+import eu.kpgtb.shop.data.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Getter @Setter
 @Entity
-public class Category extends BaseEntity{
+public class Category extends BaseEntity {
     private String name;
     private String description;
 

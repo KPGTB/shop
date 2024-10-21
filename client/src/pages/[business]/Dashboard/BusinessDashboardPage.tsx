@@ -11,18 +11,6 @@ const BusinessDashboardPage = () => {
 
 			<form
 				method="POST"
-				action={`${API_URL}/payment`}
-			>
-				<input
-					type="hidden"
-					value="1:4"
-					name="products"
-				/>
-				<button>Test</button>
-			</form>
-
-			<form
-				method="POST"
 				action={`${API_URL}/auth/signout`}
 			>
 				<button>Logout</button>

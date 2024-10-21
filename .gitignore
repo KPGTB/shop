@@ -3,6 +3,7 @@ server/target/
 !server/**/src/test/**/target/
 
 server/application.properties
+server/assets
 
 ### STS ###
 server/.apt_generated

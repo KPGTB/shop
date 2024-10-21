@@ -76,6 +76,17 @@ const LandingPage = () => {
 					</section>
 				))}
 			</article>
+			<form
+				method="POST"
+				action={`${API_URL}/payment`}
+			>
+				<input
+					type="text"
+					defaultValue="1:4"
+					name="products"
+				/>
+				<button>Test</button>
+			</form>
 			<article className={styles.stats}>
 				<section>
 					<FaUser />

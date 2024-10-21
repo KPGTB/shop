@@ -45,7 +45,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .requestMatchers(HttpMethod.PUT, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
                 .requestMatchers(HttpMethod.DELETE, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
                 // Payment
-                .requestMatchers(HttpMethod.POST, "/payment").authenticated()
+                //.requestMatchers(HttpMethod.POST, "/payment").authenticated()
                 .anyRequest().permitAll()
             ).formLogin((form) -> form
                 .loginPage("/auth/signin")

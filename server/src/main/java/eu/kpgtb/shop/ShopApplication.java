@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ShopApplication {
 	@Autowired
 	private IEmailService emailService;
+
 	public static void main(String[] args) {
 		SpringApplication.run(ShopApplication.class, args);
 	}

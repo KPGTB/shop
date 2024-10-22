@@ -16,8 +16,5 @@ public class StripeInit implements CommandLineRunner {
     @Override
     public void run(String... args) {
         Stripe.apiKey = properties.getStripePrivateKey();
-
-        new File("./assets/invoices").mkdirs();
-        new File("./assets/receipts").mkdirs();
     }
 }

@@ -76,32 +76,6 @@ const LandingPage = () => {
 					</section>
 				))}
 			</article>
-			<form
-				method="POST"
-				action={`${API_URL}/payment/test`}
-			>
-				<input
-					type="hidden"
-					name="p1"
-					value="3"
-				/>
-				<input
-					type="hidden"
-					name="p2"
-					value="1"
-				/>
-				<input
-					type="hidden"
-					name="p4"
-					value="6"
-				/>
-				<input
-					type="hidden"
-					name="p6"
-					value="2"
-				/>
-				<button>Test</button>
-			</form>
 			<article className={styles.stats}>
 				<section>
 					<FaUser />

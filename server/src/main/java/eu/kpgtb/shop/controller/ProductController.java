@@ -15,6 +15,7 @@ import eu.kpgtb.shop.data.repository.product.ProductRepository;
 import eu.kpgtb.shop.util.JsonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -33,10 +34,13 @@ public class ProductController {
 
     private List<TaxCode> taxes;
 
-    public ProductController(Properties properties) throws StripeException {
+    public ProductController(Properties properties) {
         taxes = new ArrayList<>();
         this.properties = properties;
+    }
 
+    @Async
+    public void loadTaxCodes() throws StripeException{
         if(Stripe.apiKey == null) {
             Stripe.apiKey = properties.getStripePrivateKey();
         }

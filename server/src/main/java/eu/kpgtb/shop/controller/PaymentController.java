@@ -5,6 +5,7 @@ import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.stripe.param.checkout.SessionRetrieveParams;
 import eu.kpgtb.shop.auth.User;
 import eu.kpgtb.shop.config.Properties;
 import eu.kpgtb.shop.data.entity.order.OrderEntity;
@@ -18,6 +19,7 @@ import eu.kpgtb.shop.data.repository.order.OrderProductRepository;
 import eu.kpgtb.shop.data.repository.order.OrderRepository;
 import eu.kpgtb.shop.data.repository.product.ProductFieldRepository;
 import eu.kpgtb.shop.data.repository.product.ProductRepository;
+import eu.kpgtb.shop.serivce.IS3Service;
 import eu.kpgtb.shop.util.JsonResponse;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,20 +29,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
@@ -48,17 +44,13 @@ import java.util.*;
 @RestController
 @RequestMapping("/payment")
 public class PaymentController {
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private OrderProductRepository orderProductRepository;
-    @Autowired
-    private OrderProductFieldRepository orderProductFieldRepository;
-    @Autowired
-    private ProductFieldRepository productFieldRepository;
-    @Autowired
-    private OrderRepository orderRepository;
+    @Autowired private ProductRepository productRepository;
+    @Autowired private OrderProductRepository orderProductRepository;
+    @Autowired private OrderProductFieldRepository orderProductFieldRepository;
+    @Autowired private ProductFieldRepository productFieldRepository;
+    @Autowired private OrderRepository orderRepository;
 
+    @Autowired private IS3Service s3Service;
     private final Properties properties;
     private final String SUCCESS_URL;
     private final String FAIL_URL;
@@ -72,89 +64,58 @@ public class PaymentController {
     @PostMapping
     public ResponseEntity<Void> pay(@RequestBody MultiValueMap<String,String> body, Authentication authentication) throws URISyntaxException, StripeException {
         List<SessionCreateParams.LineItem> items = new ArrayList<>();
-        List<OrderProductEntity> opEntities = new ArrayList<>();
         List<SessionCreateParams.CustomField> customFields = new ArrayList<>();
+        List<OrderProductEntity> opEntities = new ArrayList<>();
 
-        Map<String,String> products = body.toSingleValueMap();
-        products.forEach((pIdStr, quantityStr) -> {
+        // Collect products from body
+        body.toSingleValueMap().forEach((pIdStr, quantityStr) -> {
             int pId = Integer.parseInt(pIdStr);
             int quantity = Integer.parseInt(quantityStr);
+            ProductEntity entity = productRepository.findById(pId).orElse(null);
 
-            if(quantity < 1) return;
-            Optional<ProductEntity> entityOpt = productRepository.findById(pId);
-            if(entityOpt.isEmpty()) return;
-            ProductEntity entity = entityOpt.get();
+            if(entity == null || quantity < 1) return;
+            opEntities.add(new OrderProductEntity(entity, quantity, new ArrayList<>()));
 
+            Product product;
             try {
-                Product product = Product.retrieve(entity.getStripeId());
-                opEntities.add(new OrderProductEntity(entity, quantity, new ArrayList<>()));
+                product = Product.retrieve(entity.getStripeId());
                 items.add(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity((long) quantity)
                                 .setPrice(product.getDefaultPrice())
                                 .build()
                 );
-                entity.getFields().forEach(field -> {
-                    SessionCreateParams.CustomField.Builder builder = SessionCreateParams.CustomField.builder()
-                            .setType(field.getType())
-                            .setLabel(SessionCreateParams.CustomField.Label.builder()
-                                    .setType(SessionCreateParams.CustomField.Label.Type.CUSTOM)
-                                    .setCustom(product.getName() + " - " + field.getLabel())
-                                    .build())
-                            .setKey(product.getId() + "-" + field.getId())
-                            .setOptional(field.isOptional());
-
-                    if(field.getType() == SessionCreateParams.CustomField.Type.DROPDOWN) {
-                        List<SessionCreateParams.CustomField.Dropdown.Option> options = new ArrayList<>();
-
-                        field.getOptions().forEach(option -> {
-                            options.add(SessionCreateParams.CustomField.Dropdown.Option.builder()
-                                            .setLabel(option.getLabel())
-                                            .setValue(option.getValue())
-                                    .build()
-                            );
-                        });
-
-                        builder = builder.setDropdown(SessionCreateParams.CustomField.Dropdown.builder()
-                                .addAllOption(options)
-                                .build()
-                        );
-                    }
-
-                    customFields.add(builder.build());
-                });
             } catch (StripeException e) {
                 e.printStackTrace();
+                return;
             }
+
+            customFields.addAll(entity.getFields()
+                    .stream()
+                    .map(field -> field.getStripeObject(pId, product.getName())).toList());
         });
+        if(items.isEmpty()) return ResponseEntity.status(303).location(new URI(FAIL_URL)).build();
 
-        if(items.isEmpty()) {
-            return ResponseEntity.status(303).location(new URI(FAIL_URL)).build();
-        }
-
-        UserEntity user = null;
-        if(authentication != null) {
-            user = ((User)authentication.getPrincipal()).getEntity();
-        }
+        // Save basic data to database
+        UserEntity user = authentication != null ?
+                ((User)authentication.getPrincipal()).getEntity() : null;
 
         orderProductRepository.saveAll(opEntities);
         OrderEntity orderEntity = OrderEntity.builder()
                 .user(user)
                 .products(opEntities)
                 .status(OrderEntity.OrderStatus.PAYING)
-                .paymentUrl("")
-                .paymentDate(new Timestamp(Instant.now().toEpochMilli()))
+                .orderDate(new Timestamp(Instant.now().toEpochMilli()))
                 .build();
         orderRepository.save(orderEntity);
 
-        SessionCreateParams params = SessionCreateParams.builder()
+        // Prepare checkout
+        SessionCreateParams.Builder params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(SUCCESS_URL)
                 .setCancelUrl(FAIL_URL)
                 .setAllowPromotionCodes(true)
                 .setCustomerEmail(user != null ? user.getEmail() : null)
-                .addAllCustomField(customFields)
-                .addCustomField(SessionCreateParams.CustomField.builder().setType(SessionCreateParams.CustomField.Type.NUMERIC).build())
                 .setPhoneNumberCollection(SessionCreateParams.PhoneNumberCollection.builder().setEnabled(
                         properties.isStripeCollectPhoneNumber()
                 ).build())
@@ -170,141 +131,58 @@ public class PaymentController {
                         SessionCreateParams.AutomaticTax.builder().setEnabled(true).build()
                 )
                 .addAllLineItem(items)
-                .putMetadata("order_id", String.valueOf(orderEntity.getId()))
-                .build();
+                .putMetadata("order_id", String.valueOf(orderEntity.getId()));
+        if(!customFields.isEmpty()) params = params.addAllCustomField(customFields);
+        Session session = Session.create(params.build());
 
-        Session session = Session.create(params);
-
+        // Update basic data in database
         orderEntity.setPaymentUrl(session.getUrl());
         orderEntity.setStripeId(session.getId());
         orderRepository.save(orderEntity);
 
+        // Redirect to checkout
         return ResponseEntity.status(303).location(new URI(session.getUrl())).build();
     }
 
     @SneakyThrows
     @PostMapping("/handle")
     public JsonResponse<Void> handlePayment(@RequestBody String payload, @RequestHeader("Stripe-Signature") String signature) {
+        // Validate webhook
         Event event = null;
-
         try {
             event = Webhook.constructEvent(payload, signature,properties.getStripeWebhookKey());
         } catch (Exception e) {
             return new JsonResponse<>(HttpStatus.BAD_REQUEST, "Invalid payload or signature");
         }
+        StripeObject stripeObject= event.getDataObjectDeserializer().getObject().orElse(null);
+        if(stripeObject == null) return new JsonResponse<>(HttpStatus.BAD_REQUEST, "Object empty");
 
-        Optional<StripeObject> optionalObj= event.getDataObjectDeserializer().getObject();
-
-        if(optionalObj.isEmpty()) {
-            return new JsonResponse<>(HttpStatus.BAD_REQUEST, "Object empty");
-        }
-
-        StripeObject stripeObject = optionalObj.get();
+        // Validate metadata
         Map<String,String> metadata = new HashMap<>();
+        if(stripeObject instanceof MetadataStore<?>) metadata = ((MetadataStore<?>) stripeObject).getMetadata();
+        if(stripeObject instanceof Session) metadata = ((Session) stripeObject).getMetadata();
+        if(!metadata.containsKey("order_id")) return new JsonResponse<>(HttpStatus.BAD_REQUEST, "Invalid metadata");
 
-        if(stripeObject instanceof MetadataStore<?>) {
-            metadata = ((MetadataStore<?>) stripeObject).getMetadata();
-        }
-        if(stripeObject instanceof Session) {
-            metadata = ((Session) stripeObject).getMetadata();
-        }
-
-        if(!metadata.containsKey("order_id")) {
-            return new JsonResponse<>(HttpStatus.BAD_REQUEST, "");
-        }
-
+        // Validate order
         int orderId = Integer.parseInt(metadata.get("order_id"));
-        Optional<OrderEntity> orderEntityOpt = orderRepository.findById(orderId);
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElse(null);
+        if(orderEntity == null) return new JsonResponse<>(HttpStatus.BAD_REQUEST, "Order not found");
 
-        if(orderEntityOpt.isEmpty()) {
-            return new JsonResponse<>(HttpStatus.BAD_REQUEST, "");
-        }
-
-        OrderEntity orderEntity = orderEntityOpt.get();
-
+        // Fulfill order
         switch (event.getType()) {
             case "checkout.session.completed":
             case "checkout.session.async_payment_succeeded":
-                Session session = (Session) stripeObject;
-                if(!session.getPaymentStatus().equalsIgnoreCase("unpaid")) {
-                    orderEntity.setStatus(OrderEntity.OrderStatus.PAID);
-                    orderEntity.setPaymentDate(new Timestamp(Instant.now().toEpochMilli()));
-                    orderEntity.setStripeId(session.getPaymentIntent());
-                    orderEntity.setPaymentUrl(null);
+                Session session = Session.retrieve(
+                        ((Session)stripeObject).getId(),
+                        SessionRetrieveParams.builder()
+                                .addExpand("invoice")
+                                .addExpand("invoice.charge")
+                                .build(),
+                        null
+                );
 
-                    Session.CustomerDetails details = session.getCustomerDetails();
-
-                    String email =details.getEmail();
-                    String customer = details.getName();
-                    if(customer == null) customer = email;
-
-                    orderEntity.setOrderEmail(email);
-                    orderEntity.setCustomer(customer);
-
-                    if(properties.isStripeCollectPhoneNumber()) {
-                        orderEntity.setPhoneNumber(details.getPhone());
-                    }
-
-                    if(properties.isStripeCollectBillingAddress()) {
-                        orderEntity.setCountry(details.getAddress().getCountry());
-                        orderEntity.setCity(details.getAddress().getCity());
-                        orderEntity.setPostalCode(details.getAddress().getPostalCode());
-                        orderEntity.setState(details.getAddress().getState());
-                        orderEntity.setAddress1(details.getAddress().getLine1());
-                        orderEntity.setAddress2(details.getAddress().getLine2());
-                    }
-
-                    Invoice invoice = Invoice.retrieve(session.getInvoice());
-
-                    InputStream in = new URL(invoice.getInvoicePdf()).openStream();
-                    Files.copy(in, Paths.get("./assets/invoices/"+invoice.getNumber()+".pdf"), StandardCopyOption.REPLACE_EXISTING);
-                    in.close();
-
-                    Charge charge = Charge.retrieve(invoice.getCharge());
-                    String receiptUrl = charge.getReceiptUrl().split("\\?", 2)[0] + "/pdf?s=ap";
-
-                    in = new URL(receiptUrl).openStream();
-                    Files.copy(in, Paths.get("./assets/receipts/"+invoice.getNumber()+".pdf"), StandardCopyOption.REPLACE_EXISTING);
-                    in.close();
-
-                    orderEntity.setInvoiceNumber(invoice.getNumber());
-
-                    Map<Integer, List<OrderProductField>> fieldsData = new HashMap<>();
-
-                    session.getCustomFields().forEach(field -> {
-                        String[] key = field.getKey().split("-",2);
-                        int pId = Integer.parseInt(key[0]);
-                        int fId = Integer.parseInt(key[1]);
-
-                        Optional<ProductEntity> productEntityOpt = productRepository.findById(pId);
-                        Optional<ProductField> fieldEntityOpt = productFieldRepository.findById(fId);
-
-                        if(productEntityOpt.isEmpty() || fieldEntityOpt.isEmpty()) return;
-
-                        OrderProductField opf = new OrderProductField(
-                                fieldEntityOpt.get(),field.getText() != null ? field.getText().getValue() : null
-                        );
-                        orderProductFieldRepository.save(opf);
-                        fieldsData.putIfAbsent(pId, new ArrayList<>());
-                        fieldsData.get(pId).add(opf);
-                    });
-
-                    orderEntity.getProducts().forEach(opEntity -> {
-                        if(fieldsData.containsKey(opEntity.getProduct().getId())) {
-                            opEntity.setFields(fieldsData.get(opEntity.getProduct().getId()));
-                        }
-                        orderProductRepository.save(opEntity);
-                    });
-
-                    orderRepository.save(orderEntity);
-
-                    // TODO: Execute order
-
-                    orderEntity.setStatus(OrderEntity.OrderStatus.COMPLETED);
-                    orderEntity.setCompletionDate(new Timestamp(Instant.now().toEpochMilli()));
-                    orderRepository.save(orderEntity);
-                }
-                break;
+                fulfillOrder(session, orderEntity);
+                return new JsonResponse<>(HttpStatus.OK, "");
             case "checkout.session.async_payment_failed":
             case "checkout.session.expired":
                 orderEntity.setStatus(OrderEntity.OrderStatus.FAILED);
@@ -315,37 +193,100 @@ public class PaymentController {
         return new JsonResponse<>(HttpStatus.OK, "");
     }
 
+    @Async
+    private void fulfillOrder(Session session, OrderEntity orderEntity) {
+        if(session.getPaymentStatus().equalsIgnoreCase("unpaid")) return;
+        Session.CustomerDetails details = session.getCustomerDetails();
+        Invoice invoice = session.getInvoiceObject();
+        Charge charge = session.getInvoiceObject().getChargeObject();
+
+        String receiptUrl = charge.getReceiptUrl().split("\\?", 2)[0] + "/pdf?s=ap";
+        String invoiceUrl = invoice.getInvoicePdf();
+        String invoiceNumber = invoice.getNumber();
+
+        // Add more data to database
+        orderEntity.setStatus(OrderEntity.OrderStatus.PAID);
+        orderEntity.setPaymentDate(new Timestamp(Instant.now().toEpochMilli()));
+        orderEntity.setStripeId(session.getPaymentIntent());
+        orderEntity.setPaymentUrl(null);
+        orderEntity.setContactData(details);
+        orderEntity.setBillingAddress(details);
+        orderEntity.setInvoiceNumber(invoiceNumber);
+
+        // Read custom fields
+        Map<Integer, List<OrderProductField>> fieldsData = new HashMap<>();
+        session.getCustomFields().forEach(field -> {
+            String[] key = field.getKey().split("-",2);
+            int pId = Integer.parseInt(key[0]);
+            int fId = Integer.parseInt(key[1]);
+
+            Optional<ProductEntity> productEntityOpt = productRepository.findById(pId);
+            Optional<ProductField> fieldEntityOpt = productFieldRepository.findById(fId);
+
+            if(productEntityOpt.isEmpty() || fieldEntityOpt.isEmpty()) return;
+
+            OrderProductField opf = new OrderProductField(
+                    fieldEntityOpt.get(),field.getText() != null ? field.getText().getValue() : null
+            );
+            orderProductFieldRepository.save(opf);
+
+            fieldsData.putIfAbsent(pId, new ArrayList<>());
+            fieldsData.get(pId).add(opf);
+        });
+
+        // Save input from custom fields
+        orderEntity.getProducts().forEach(opEntity -> {
+            int id = opEntity.getProduct().getId();
+            if(fieldsData.containsKey(id)) opEntity.setFields(fieldsData.get(opEntity.getProduct().getId()));
+            orderProductRepository.save(opEntity);
+        });
+
+        // Finish order payment
+        orderRepository.save(orderEntity);
+        uploadInvoice(invoiceUrl,receiptUrl,invoiceNumber);
+        completeOrder(orderEntity);
+    }
+
+    @Async
+    private void uploadInvoice(String invoiceUrl, String receiptUrl, String invoiceNumber) {
+        s3Service.uploadFile(invoiceUrl, "invoice_" + invoiceNumber + ".pdf", properties.getS3PrivateBucket());
+        s3Service.uploadFile(receiptUrl, "receipt_" + invoiceNumber + ".pdf", properties.getS3PrivateBucket());
+    }
+
+    @Async
+    private void completeOrder(OrderEntity orderEntity) {
+        // TODO: Execute actions
+
+        orderEntity.setStatus(OrderEntity.OrderStatus.COMPLETED);
+        orderEntity.setCompletionDate(new Timestamp(Instant.now().toEpochMilli()));
+        orderRepository.save(orderEntity);
+    }
+
     @GetMapping("/document")
     private ResponseEntity<Resource> document(@RequestParam(name = "type") String type, @RequestParam(name = "number") String number, Authentication authentication) throws IOException {
-        if(!type.equalsIgnoreCase("invoice") && !type.equalsIgnoreCase("receipt")) {
-            return ResponseEntity.status(400).build();
-        }
+        if(!Arrays.asList("invoice", "receipt").contains(type)) return ResponseEntity.status(400).build();
 
-        Optional<OrderEntity> orderOpt = orderRepository.findByInvoiceNumber(number);
+        // Check if invoice exists
+        OrderEntity entity = orderRepository.findByInvoiceNumber(number).orElse(null);
+        if(entity == null) return ResponseEntity.status(404).build();
 
-        if(orderOpt.isEmpty()) {
-            return ResponseEntity.status(404).build();
-        }
-
-        OrderEntity entity = orderOpt.get();
+        // Check permissions
         if(entity.getUser() != null) {
             if(authentication == null) return ResponseEntity.status(403).build();
             UserEntity user = ((User)authentication.getPrincipal()).getEntity();
-            if(user.getId() != entity.getUser().getId()) {
-                return ResponseEntity.status(403).build();
-            }
+            if(user.getId() != entity.getUser().getId()) return ResponseEntity.status(403).build();
         }
 
-        java.io.File file = new File("./assets/"+type+"s/"+number+".pdf");
-        Path path = file.toPath();
-        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+        // Download invoice/receipt
+        byte[] bytes = s3Service.getFile(type+"_"+number+".pdf", properties.getS3PrivateBucket());
+        ByteArrayResource resource = new ByteArrayResource(bytes);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+type+"_"+number+".pdf");
 
         return ResponseEntity.ok()
                 .headers(headers)
-                .contentLength(file.length())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(resource.contentLength())
+                .contentType(MediaType.APPLICATION_PDF)
                 .body(resource);
     }
 }

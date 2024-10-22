@@ -46,6 +46,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .requestMatchers(HttpMethod.DELETE, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
                 // Payment
                 //.requestMatchers(HttpMethod.POST, "/payment").authenticated()
+                // Image
+                .requestMatchers(HttpMethod.PUT, "/image/upload").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
                 .anyRequest().permitAll()
             ).formLogin((form) -> form
                 .loginPage("/auth/signin")
@@ -71,6 +73,7 @@ public class SecurityConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowCredentials(true)
+                .allowedMethods("POST", "GET", "PUT", "DELETE", "OPTIONS")
                 .allowedOrigins(this.properties.getFrontendUrl());
     }
 

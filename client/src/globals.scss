@@ -28,9 +28,68 @@ body {
 
 * {
 	color: var(--text-color);
+	transition-behavior: allow-discrete !important;
 }
 
 main {
 	min-height: calc(100vh - 8vh);
 	min-height: calc(100dvh - 8vh);
+}
+
+@mixin link {
+	all: unset;
+	display: inline-block;
+
+	cursor: pointer;
+
+	transition-property: transform color;
+	transition-duration: 0.2s;
+	transition-timing-function: ease;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--text-accent);
+
+		svg {
+			transform: scale(1.15);
+			* {
+				color: var(--text-accent);
+			}
+		}
+	}
+}
+
+a,
+button.icon {
+	@include link;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="text"],
+input:not([type]),
+textarea,
+select {
+	all: unset;
+	background-color: var(--bg-color);
+	border: solid 1px var(--text-color);
+	border-radius: 0.5rem;
+	padding: 0.25rem;
+	resize: none;
+}
+
+textarea {
+	min-height: 8rem;
+}
+
+button {
+	all: unset;
+	cursor: pointer;
+	border: solid 2px var(--accent);
+	border-radius: 0.5rem;
+	padding: 0.5rem;
+	text-align: center;
+	font-weight: bold;
+	background-color: var(--bg-color);
 }

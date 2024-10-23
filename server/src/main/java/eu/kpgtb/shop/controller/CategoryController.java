@@ -28,8 +28,20 @@ public class CategoryController {
         categoryRepository.findAll().forEach(category -> {
             result.add(new CategoryInfo(
                     category.getId(),
-                    category.getName()
+                    category.getName(),
+                    category.getNameInUrl()
             ));
+        });
+
+        return new JsonResponse<>(HttpStatus.OK, "List of categories", result);
+    }
+
+    @GetMapping("/list/full")
+    public JsonResponse<List<Category.CategoryDisplay>> listFull() {
+        List<Category.CategoryDisplay> result = new ArrayList<>();
+
+        categoryRepository.findAll().forEach(category -> {
+            result.add(category.getDisplay());
         });
 
         return new JsonResponse<>(HttpStatus.OK, "List of categories", result);
@@ -45,13 +57,13 @@ public class CategoryController {
     }
 
     @PutMapping
-    public JsonResponse<Boolean> create(@RequestBody CategoryCreateBody data) {
-        categoryRepository.save(new Category(data.name,data.description,new ArrayList<>()));
+    public JsonResponse<Boolean> create(CategoryCreateBody data) {
+        categoryRepository.save(new Category(data.name,data.description, data.nameInUrl,new ArrayList<>()));
         return new JsonResponse<>(HttpStatus.CREATED, "Created");
     }
 
     @PostMapping
-    public JsonResponse<Boolean> edit(@RequestBody CategoryEditBody data) {
+    public JsonResponse<Boolean> edit(CategoryEditBody data) {
         Optional<Category> categoryOpt = categoryRepository.findById(data.id);
         if(categoryOpt.isEmpty()) {
             return new JsonResponse<>(HttpStatus.NOT_FOUND, "Category not found");
@@ -60,12 +72,14 @@ public class CategoryController {
         Category category = categoryOpt.get();
         category.setName(data.name);
         category.setDescription(data.description);
+        category.setNameInUrl(data.nameInUrl);
         categoryRepository.save(category);
         return new JsonResponse<>(HttpStatus.OK, "Updated");
     }
 
     @DeleteMapping
-    public JsonResponse<Boolean> delete(@RequestBody int id) {
+    public JsonResponse<Boolean> delete(@RequestBody String idStr) {
+        int id = Integer.parseInt(idStr);
         Optional<Category> categoryOpt = categoryRepository.findById(id);
         if(categoryOpt.isEmpty()) {
             return new JsonResponse<>(HttpStatus.NOT_FOUND, "Category not found");
@@ -86,7 +100,7 @@ public class CategoryController {
     }
 
 
-    record CategoryInfo(int id, String name) {}
-    record CategoryCreateBody(String name, String description) {}
-    record CategoryEditBody(int id, String name, String description) {}
+    record CategoryInfo(int id, String name, String nameInUrl) {}
+    record CategoryCreateBody(String name, String description, String nameInUrl) {}
+    record CategoryEditBody(int id, String name, String description, String nameInUrl) {}
 }

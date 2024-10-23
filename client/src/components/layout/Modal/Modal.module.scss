@@ -1,0 +1,99 @@
+.bg {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	height: 100dvh;
+	z-index: 10;
+
+	transition-property: background-color opacity;
+	transition-duration: 0.3s;
+	transition-timing-function: ease;
+}
+
+.modal {
+	display: none;
+
+	position: fixed;
+	top: -100%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 11;
+
+	background-color: var(--bg-color);
+	width: 60vw;
+	padding: 2rem 3rem;
+	border-radius: 1rem;
+
+	transition-property: top display;
+	transition-duration: 0.3s;
+	transition-timing-function: ease;
+}
+
+.visible {
+	display: block;
+
+	&.bg {
+		background-color: black;
+		opacity: 0.75;
+
+		@starting-style {
+			background-color: black;
+			opacity: 0;
+		}
+	}
+
+	&.modal {
+		top: 50%;
+
+		@starting-style {
+			top: -100%;
+		}
+	}
+}
+
+.title {
+	display: flex;
+	font-size: 1.75rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-bottom: 2rem;
+
+	border-bottom: dashed 2px var(--bg-accent);
+
+	h1 {
+		margin: 0;
+	}
+
+	button {
+		font-size: 1rem;
+	}
+}
+
+.content {
+	width: 80%;
+	margin: 2rem auto;
+
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+
+	overflow-y: auto;
+	max-height: 65vh;
+
+	label {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+}
+
+.buttons {
+	padding-top: 2rem;
+	border-top: dashed 2px var(--bg-accent);
+	display: flex;
+	align-items: center;
+	justify-content: end;
+}

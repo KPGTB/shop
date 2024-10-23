@@ -13,7 +13,6 @@
 
 	transition-property: display right;
 	transition-duration: 0.75s;
-	transition-behavior: allow-discrete;
 	transition-timing-function: ease-out;
 
 	&.show {

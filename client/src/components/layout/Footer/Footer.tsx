@@ -1,5 +1,5 @@
 import {IconType} from "react-icons"
-import {FaDiscord, FaInstagram, FaX} from "react-icons/fa6"
+import {FaDiscord, FaInstagram, FaXTwitter} from "react-icons/fa6"
 import {MdEmail} from "react-icons/md"
 import {Link} from "react-router-dom"
 
@@ -15,7 +15,7 @@ const media: {url: string; text: string; icon: IconType}[] = [
 	{
 		url: "https://x.com",
 		text: "X (Twitter)",
-		icon: FaX,
+		icon: FaXTwitter,
 	},
 	{
 		url: "https://instagram.com",

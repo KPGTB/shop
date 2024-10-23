@@ -30,19 +30,8 @@
 	margin-left: 3rem;
 
 	a {
-		all: unset;
-		display: inline-block;
-
 		font-weight: 500;
-		cursor: pointer;
 		font-style: italic;
-
-		transition: color 0.2s ease;
-
-		&:hover {
-			text-decoration: underline;
-			color: var(--text-accent);
-		}
 	}
 }
 
@@ -52,19 +41,7 @@
 
 	button,
 	a {
-		all: unset;
-		display: inline-block;
-
 		font-size: 1.5rem;
-		cursor: pointer;
-		transition: transform 0.2s ease;
-
-		&:hover {
-			transform: scale(1.15);
-			svg * {
-				color: var(--text-accent);
-			}
-		}
 	}
 }
 
@@ -113,7 +90,6 @@
 
 	transition-property: height font-size padding-bottom;
 	transition-duration: 0.1s;
-	transition-behavior: allow-discrete;
 
 	@starting-style {
 		height: 1px;

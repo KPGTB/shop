@@ -37,6 +37,11 @@ public class ProductController {
     public ProductController(Properties properties) {
         taxes = new ArrayList<>();
         this.properties = properties;
+        try {
+            loadTaxCodes();
+        } catch (StripeException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Async
@@ -102,10 +107,12 @@ public class ProductController {
 
         ProductEntity entity = new ProductEntity(
                 body.name,
+                body.nameInUrl,
                 body.description,
                 body.image,
                 properties.getStripeCurrency(),
                 body.price,
+                body.taxCode,
                 product.getId(),
                 categoryOpt.get(),
                 body.fields
@@ -156,11 +163,13 @@ public class ProductController {
                 .build();
 
         entity.setName(body.name);
+        entity.setNameInUrl(body.nameInUrl);
         entity.setDescription(body.description);
         entity.setPrice(body.price);
         entity.setImage(body.image);
         entity.setCategory(categoryOpt.get());
         entity.setFields(body.fields);
+        entity.setTaxCode(body.taxCode);
 
         product.update(productParams);
         productRepository.save(entity);
@@ -168,7 +177,8 @@ public class ProductController {
     }
 
     @DeleteMapping
-    public JsonResponse<Boolean> delete(@RequestBody int id) throws StripeException {
+    public JsonResponse<Boolean> delete(@RequestBody String idStr) throws StripeException {
+        int id = Integer.parseInt(idStr);
         Optional<ProductEntity> productOpt = productRepository.findById(id);
         if(productOpt.isEmpty()) {
             return new JsonResponse<>(HttpStatus.NOT_FOUND, "Product not found");
@@ -200,7 +210,7 @@ public class ProductController {
         return new JsonResponse<>(HttpStatus.OK, "Updated");
     }
 
-    record ProductCreateBody(String name, String description, String image, double price, String taxCode, int categoryId, List<ProductField> fields) {}
-    record ProductEditBody(int id, String name, String description, String image, double price,String taxCode, int categoryId, List<ProductField> fields) {}
+    record ProductCreateBody(String name, String nameInUrl,String description, String image, double price, String taxCode, int categoryId, List<ProductField> fields) {}
+    record ProductEditBody(int id, String name, String description, String nameInUrl, String image, double price,String taxCode, int categoryId, List<ProductField> fields) {}
     record TaxData(boolean hasMore, List<TaxCode> codes) {}
 }

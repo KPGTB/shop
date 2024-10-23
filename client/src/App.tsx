@@ -3,7 +3,10 @@ import "./globals.scss"
 import ReactDOM from "react-dom/client"
 import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom"
 
+import BusinessLayout from "./pages/[business]/BusinessLayout"
 import BusinessDashboardPage from "./pages/[business]/Dashboard/BusinessDashboardPage"
+import businessProductsLoader from "./pages/[business]/Products/BusinessProductsLoader"
+import BusinessProductsPage from "./pages/[business]/Products/BusinessProductsPage"
 import CustomerDashboardPage from "./pages/[customer]/Dashboard/CustomerDashboardPage"
 import Error from "./pages/Error"
 import LandingPage from "./pages/Landing/LandingPage"
@@ -42,10 +45,15 @@ const router = createBrowserRouter([
 			},
 			{
 				path: "business",
-				element: <Outlet />,
+				element: <BusinessLayout />,
 				loader: () => roleMiddleware(authService, "BUSINESS"),
 				children: [
 					{path: "dashboard", element: <BusinessDashboardPage />},
+					{
+						path: "products",
+						element: <BusinessProductsPage />,
+						loader: businessProductsLoader,
+					},
 				],
 			},
 		],

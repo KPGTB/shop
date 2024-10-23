@@ -10,21 +10,7 @@
 .status {
 	color: var(--text-accent);
 	font-style: italic;
-
 	a {
-		all: unset;
-		display: inline-block;
-
 		font-size: 0.75rem;
-		cursor: pointer;
-		transition: transform 0.2s ease;
-
-		&:hover {
-			transform: scale(1.05);
-			text-decoration: underline;
-			svg * {
-				color: var(--text-accent);
-			}
-		}
 	}
 }

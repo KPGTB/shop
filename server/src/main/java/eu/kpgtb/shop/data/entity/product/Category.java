@@ -2,6 +2,7 @@ package eu.kpgtb.shop.data.entity.product;
 
 import eu.kpgtb.shop.data.entity.BaseEntity;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +18,8 @@ import java.util.stream.Collectors;
 @Entity
 public class Category extends BaseEntity {
     private String name;
-    private String description;
+    @Lob private String description;
+    private String nameInUrl;
 
     @OneToMany(mappedBy = "category")
     private List<ProductEntity> products;
@@ -26,12 +28,13 @@ public class Category extends BaseEntity {
         return new CategoryDisplay(this);
     }
 
-    public record CategoryDisplay(int id, String name, String description, List<ProductEntity.ProductDisplay> products) {
+    public record CategoryDisplay(int id, String name, String description, String nameInUrl, List<ProductEntity.ProductDisplay> products) {
         public CategoryDisplay(Category category) {
             this(
                     category.getId(),
                     category.name,
                     category.description,
+                    category.nameInUrl,
                     category.products
                             .stream()
                             .map(ProductEntity.ProductDisplay::new)

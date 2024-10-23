@@ -27,7 +27,6 @@ class AuthService {
 
 const authenticatedMiddleware = (authService: AuthService) => {
 	const userData = authService.getUser()
-	console.log(userData)
 	if (!userData) {
 		return redirect("/error?status=403&message=Forbidden")
 	}
@@ -36,7 +35,6 @@ const authenticatedMiddleware = (authService: AuthService) => {
 
 const unauthenticatedMiddleware = (authService: AuthService) => {
 	const userData = authService.getUser()
-	console.log(userData)
 	if (userData) {
 		return redirect("/error?status=403&message=Forbidden")
 	}
@@ -45,7 +43,6 @@ const unauthenticatedMiddleware = (authService: AuthService) => {
 
 const roleMiddleware = (authService: AuthService, role: UserRole) => {
 	const userData = authService.getUser()
-	console.log(userData)
 	if (!userData || userData.role != role) {
 		return redirect("/error?status=403&message=Forbidden")
 	}

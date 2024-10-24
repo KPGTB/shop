@@ -5,14 +5,15 @@ import {MdError, MdModeNight, MdWbSunny} from "react-icons/md"
 import {Link} from "react-router-dom"
 
 import {useAuth} from "../../../context/AuthContext"
+import {useCart} from "../../../context/CartContext"
 import ThemeContext from "../../../context/ThemeContext"
-import {Theme} from "../../../pages/Layout"
 import styles from "./Header.module.scss"
 import headerLoader from "./HeaderLoader"
 
 const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
 	const theme = useContext<Theme>(ThemeContext)
 	const [logged, user] = useAuth()
+	const [cartItems] = useCart()
 	const [categories, setCategories] = useState<Category[] | undefined>(
 		undefined
 	)
@@ -64,7 +65,9 @@ const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
 							className={styles.cart}
 						>
 							<FaCartShopping />
-							<span>3</span>
+							{cartItems.length > 0 && (
+								<span>{cartItems.length}</span>
+							)}
 						</Link>
 						<Link
 							to={

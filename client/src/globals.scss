@@ -4,6 +4,7 @@
 
 	--text-color: black;
 	--text-accent: rgb(99, 98, 98);
+	--text-inverted: white;
 
 	--accent: #8ec54e;
 }
@@ -14,6 +15,7 @@ body[data-theme="dark"] {
 
 	--text-color: white;
 	--text-accent: rgb(207, 207, 207);
+	--text-inverted: black;
 
 	--accent: #2290cf;
 }
@@ -29,6 +31,7 @@ body {
 * {
 	color: var(--text-color);
 	transition-behavior: allow-discrete !important;
+	scroll-behavior: smooth;
 }
 
 main {

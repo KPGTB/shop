@@ -8,9 +8,16 @@ import BusinessLayout from "./pages/[business]/Layout"
 import businessProductsLoader from "./pages/[business]/Products/ProductsLoader"
 import BusinessProductsPage from "./pages/[business]/Products/ProductsPage"
 import CustomerDashboardPage from "./pages/[customer]/Dashboard/DashboardPage"
+import cartLoader from "./pages/Cart/CartLoader"
+import CartPage from "./pages/Cart/CartPage"
+import categoryLoader from "./pages/Category/CategoryLoader"
+import CategoryPage from "./pages/Category/CategoryPage"
+import productLoader from "./pages/Category/Product/ProductLoader"
+import ProductPage from "./pages/Category/Product/ProductPage"
 import Error from "./pages/Error"
 import LandingPage from "./pages/Landing/LandingPage"
 import Layout from "./pages/Layout"
+import PaymentPage from "./pages/Payment/PaymentPage"
 import SigninPage from "./pages/Signin/SigninPage"
 import AuthService, {
 	roleMiddleware,
@@ -55,6 +62,25 @@ const router = createBrowserRouter([
 						loader: businessProductsLoader,
 					},
 				],
+			},
+			{
+				path: "shop/:category",
+				element: <CategoryPage />,
+				loader: categoryLoader,
+			},
+			{
+				path: "shop/:category/:product",
+				element: <ProductPage />,
+				loader: productLoader,
+			},
+			{
+				path: "cart",
+				element: <CartPage />,
+				loader: cartLoader,
+			},
+			{
+				path: "payment",
+				element: <PaymentPage />,
 			},
 		],
 	},

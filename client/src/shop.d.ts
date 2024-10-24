@@ -69,3 +69,10 @@ type Auth = [
 type Theme = "dark" | "light"
 
 type AuthLoader = [User | undefined, AuthService]
+
+type CartItem = {
+	productId: number
+	quantity: number
+}
+
+type Cart = [CartItem[], (items: CartItem[]) => void]

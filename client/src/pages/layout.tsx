@@ -9,7 +9,8 @@ import Cookies from "../components/layout/Cookies/Cookies"
 import Footer from "../components/layout/Footer/Footer"
 import Header from "../components/layout/Header/Header"
 import {AuthProvider} from "../context/AuthContext"
-import ThemeContext, {Theme} from "../context/ThemeContext"
+import {CartProvider} from "../context/CartContext"
+import ThemeContext from "../context/ThemeContext"
 
 const Layout = () => {
 	const [user, authService]: AuthLoader = useLoaderData() as AuthLoader
@@ -33,15 +34,17 @@ const Layout = () => {
 					user={user}
 					authService={authService}
 				>
-					<Header setTheme={setTheme} />
-					<main>
-						<Outlet />
-					</main>
-					<Footer />
+					<CartProvider>
+						<Header setTheme={setTheme} />
+						<main>
+							<Outlet />
+						</main>
+						<Footer />
 
-					<Cookies />
-					<AccessibilityProvider />
-					<ToastContainer />
+						<Cookies />
+						<AccessibilityProvider />
+						<ToastContainer />
+					</CartProvider>
 				</AuthProvider>
 			</ThemeContext.Provider>
 		</>
@@ -49,4 +52,3 @@ const Layout = () => {
 }
 
 export default Layout
-export type {Theme}

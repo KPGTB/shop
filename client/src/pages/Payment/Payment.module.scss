@@ -1,0 +1,31 @@
+.container {
+	width: 100%;
+	min-height: inherit;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	h1 {
+		font-size: 3rem;
+	}
+
+	p {
+		font-size: 1.25rem;
+		font-style: italic;
+		opacity: 0.9;
+	}
+}
+
+.icon {
+	font-size: 10rem;
+
+	svg.success * {
+		color: green !important;
+	}
+
+	svg.fail * {
+		color: red !important;
+	}
+}

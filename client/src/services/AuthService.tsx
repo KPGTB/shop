@@ -49,16 +49,5 @@ const roleMiddleware = (authService: AuthService, role: UserRole) => {
 	return true
 }
 
-type User = {
-	email: string
-	role: UserRole
-	name: string
-	surname: string
-	birthDate: Date
-}
-
-type UserRole = "CUSTOMER" | "BUSINESS"
-
 export default AuthService
 export {unauthenticatedMiddleware, authenticatedMiddleware, roleMiddleware}
-export type {User, UserRole}

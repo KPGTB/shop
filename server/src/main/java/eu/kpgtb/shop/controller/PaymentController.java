@@ -100,7 +100,6 @@ public class PaymentController {
         UserEntity user = authentication != null ?
                 ((User)authentication.getPrincipal()).getEntity() : null;
 
-        orderProductRepository.saveAll(opEntities);
         OrderEntity orderEntity = OrderEntity.builder()
                 .user(user)
                 .products(opEntities)
@@ -228,7 +227,6 @@ public class PaymentController {
             OrderProductField opf = new OrderProductField(
                     fieldEntityOpt.get(),field.getText() != null ? field.getText().getValue() : null
             );
-            orderProductFieldRepository.save(opf);
 
             fieldsData.putIfAbsent(pId, new ArrayList<>());
             fieldsData.get(pId).add(opf);
@@ -238,7 +236,6 @@ public class PaymentController {
         orderEntity.getProducts().forEach(opEntity -> {
             int id = opEntity.getProduct().getId();
             if(fieldsData.containsKey(id)) opEntity.setFields(fieldsData.get(opEntity.getProduct().getId()));
-            orderProductRepository.save(opEntity);
         });
 
         // Finish order payment

@@ -1,13 +1,7 @@
 import {createContext, PropsWithChildren, useContext, useState} from "react"
 
-import AuthService, {User} from "../services/AuthService"
+import AuthService from "../services/AuthService"
 
-type Auth = [
-	boolean,
-	User | undefined,
-	AuthService | undefined,
-	(newUser: User | undefined, newService: AuthService) => void
-]
 const AuthContext = createContext<Auth>([
 	false,
 	undefined,
@@ -42,4 +36,3 @@ const useAuth = () => {
 }
 
 export {useAuth, AuthProvider}
-export type {Auth}

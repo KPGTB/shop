@@ -12,12 +12,4 @@ const headerLoader = async () => {
 	return json.data as Category[]
 }
 
-type Category = {
-	id: number
-	name: string
-	description?: string
-	nameInUrl: string
-}
-
-export type {Category}
 export default headerLoader

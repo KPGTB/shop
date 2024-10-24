@@ -1,6 +1,6 @@
 import {Link, Outlet} from "react-router-dom"
 
-import styles from "./BusinessLayout.module.scss"
+import styles from "./Layout.module.scss"
 
 const BusinessLayout = () => {
 	return (
@@ -10,6 +10,7 @@ const BusinessLayout = () => {
 				<Link to="/business/products">Products</Link>
 				<Link to="/business/discounts">Discounts</Link>
 				<Link to="/business/orders">Orders</Link>
+				<Link to="/business/newsletter">Newsletter</Link>
 				<Link to="/business/apparance">Apparance</Link>
 				<Link to="/business/settings">Settings</Link>
 				<a href={`${API_URL}/auth/signout`}>Sign Out</a>

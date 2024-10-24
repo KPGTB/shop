@@ -10,9 +10,7 @@ import Footer from "../components/layout/Footer/Footer"
 import Header from "../components/layout/Header/Header"
 import {AuthProvider} from "../context/AuthContext"
 import ThemeContext, {Theme} from "../context/ThemeContext"
-import AuthService, {User} from "../services/AuthService"
 
-type AuthLoader = [User | undefined, AuthService]
 const Layout = () => {
 	const [user, authService]: AuthLoader = useLoaderData() as AuthLoader
 	const [theme, setThemeState] = useState<Theme>("light")

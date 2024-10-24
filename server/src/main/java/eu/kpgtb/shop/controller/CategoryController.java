@@ -1,6 +1,8 @@
 package eu.kpgtb.shop.controller;
 
 import com.stripe.model.Product;
+import com.stripe.param.ProductUpdateParams;
+import eu.kpgtb.shop.data.entity.BaseEntity;
 import eu.kpgtb.shop.data.entity.product.Category;
 import eu.kpgtb.shop.data.repository.product.CategoryRepository;
 import eu.kpgtb.shop.data.repository.product.ProductRepository;
@@ -16,10 +18,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/category")
 public class CategoryController {
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private ProductRepository productRepository;
+    @Autowired private CategoryRepository categoryRepository;
+    @Autowired private ProductRepository productRepository;
 
     @GetMapping("/list")
     public JsonResponse<List<CategoryInfo>> list() {
@@ -57,29 +57,19 @@ public class CategoryController {
     }
 
     @PutMapping
-    public JsonResponse<Boolean> create(CategoryCreateBody data) {
-        categoryRepository.save(new Category(data.name,data.description, data.nameInUrl,new ArrayList<>()));
+    public JsonResponse<Boolean> create(@RequestBody Category data) {
+        categoryRepository.save(data);
         return new JsonResponse<>(HttpStatus.CREATED, "Created");
     }
 
     @PostMapping
-    public JsonResponse<Boolean> edit(CategoryEditBody data) {
-        Optional<Category> categoryOpt = categoryRepository.findById(data.id);
-        if(categoryOpt.isEmpty()) {
-            return new JsonResponse<>(HttpStatus.NOT_FOUND, "Category not found");
-        }
-
-        Category category = categoryOpt.get();
-        category.setName(data.name);
-        category.setDescription(data.description);
-        category.setNameInUrl(data.nameInUrl);
-        categoryRepository.save(category);
+    public JsonResponse<Boolean> edit(@RequestBody Category data) {
+        categoryRepository.save(data);
         return new JsonResponse<>(HttpStatus.OK, "Updated");
     }
 
     @DeleteMapping
-    public JsonResponse<Boolean> delete(@RequestBody String idStr) {
-        int id = Integer.parseInt(idStr);
+    public JsonResponse<Boolean> delete(@RequestBody Integer id) {
         Optional<Category> categoryOpt = categoryRepository.findById(id);
         if(categoryOpt.isEmpty()) {
             return new JsonResponse<>(HttpStatus.NOT_FOUND, "Category not found");
@@ -88,11 +78,13 @@ public class CategoryController {
         Category category = categoryOpt.get();
         category.getProducts().forEach(product -> {
             try {
-                Product.retrieve(product.getStripeId()).delete();
+                Product.retrieve(product.getStripeId()).update(
+                        ProductUpdateParams.builder()
+                                .setActive(false).build()
+                );
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            productRepository.delete(product);
         });
 
         categoryRepository.deleteById(id);
@@ -101,6 +93,4 @@ public class CategoryController {
 
 
     record CategoryInfo(int id, String name, String nameInUrl) {}
-    record CategoryCreateBody(String name, String description, String nameInUrl) {}
-    record CategoryEditBody(int id, String name, String description, String nameInUrl) {}
 }

@@ -8,9 +8,7 @@ import {useAuth} from "../../../context/AuthContext"
 import ThemeContext from "../../../context/ThemeContext"
 import {Theme} from "../../../pages/Layout"
 import styles from "./Header.module.scss"
-import headerLoader, {Category} from "./HeaderLoader"
-
-type ApiStatus = "loading" | "working" | "error"
+import headerLoader from "./HeaderLoader"
 
 const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
 	const theme = useContext<Theme>(ThemeContext)

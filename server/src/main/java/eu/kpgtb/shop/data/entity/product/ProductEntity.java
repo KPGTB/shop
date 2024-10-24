@@ -28,7 +28,7 @@ public class ProductEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "category_id")
     Category category;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id")
     List<ProductField> fields;
 

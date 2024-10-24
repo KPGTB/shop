@@ -29,7 +29,7 @@ public class OrderEntity extends BaseEntity {
     private String postalCode;
     private String city;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id")
     private List<OrderProductEntity> products;
 

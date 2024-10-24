@@ -1,6 +1,7 @@
 package eu.kpgtb.shop.data.entity.product;
 
 import eu.kpgtb.shop.data.entity.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
@@ -21,7 +22,7 @@ public class Category extends BaseEntity {
     @Lob private String description;
     private String nameInUrl;
 
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE)
     private List<ProductEntity> products;
 
     public CategoryDisplay getDisplay() {

@@ -11,6 +11,8 @@ import eu.kpgtb.shop.data.entity.product.Category;
 import eu.kpgtb.shop.data.entity.product.ProductEntity;
 import eu.kpgtb.shop.data.entity.product.ProductField;
 import eu.kpgtb.shop.data.repository.product.CategoryRepository;
+import eu.kpgtb.shop.data.repository.product.ProductDropdownOptionRepository;
+import eu.kpgtb.shop.data.repository.product.ProductFieldRepository;
 import eu.kpgtb.shop.data.repository.product.ProductRepository;
 import eu.kpgtb.shop.util.JsonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +28,11 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/product")
 public class ProductController {
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
+    @Autowired private ProductRepository productRepository;
+    @Autowired private CategoryRepository categoryRepository;
+    @Autowired private ProductFieldRepository productFieldRepository;
+    @Autowired private ProductDropdownOptionRepository productDropdownOptionRepository;
     private Properties properties;
-
     private List<TaxCode> taxes;
 
     public ProductController(Properties properties) {
@@ -136,6 +137,7 @@ public class ProductController {
         Product product = Product.retrieve(entity.getStripeId());
 
         String priceId = product.getDefaultPrice();
+        Price oldPrice = null;
 
         if(entity.getPrice() != body.price) {
             PriceCreateParams priceParams = PriceCreateParams.builder()
@@ -145,13 +147,8 @@ public class ProductController {
                     .setProduct(entity.getStripeId())
                     .build();
             Price price = Price.create(priceParams);
-            Price oldPrice = Price.retrieve(priceId);
+            oldPrice = Price.retrieve(priceId);
             priceId = price.getId();
-
-            PriceUpdateParams updatePriceParams = PriceUpdateParams.builder()
-                    .setActive(false)
-                    .build();
-            oldPrice.update(updatePriceParams);
         }
 
         ProductUpdateParams productParams = ProductUpdateParams.builder()
@@ -173,18 +170,29 @@ public class ProductController {
 
         product.update(productParams);
         productRepository.save(entity);
+
+        if(oldPrice != null) {
+            PriceUpdateParams updatePriceParams = PriceUpdateParams.builder()
+                    .setActive(false)
+                    .build();
+            oldPrice.update(updatePriceParams);
+        }
         return new JsonResponse<>(HttpStatus.OK, "Updated");
     }
 
+
     @DeleteMapping
-    public JsonResponse<Boolean> delete(@RequestBody String idStr) throws StripeException {
-        int id = Integer.parseInt(idStr);
+    public JsonResponse<Boolean> delete(@RequestBody Integer id) throws StripeException {
         Optional<ProductEntity> productOpt = productRepository.findById(id);
         if(productOpt.isEmpty()) {
             return new JsonResponse<>(HttpStatus.NOT_FOUND, "Product not found");
         }
         ProductEntity entity = productOpt.get();
-        Product.retrieve(entity.getStripeId()).delete();
+        Product product = Product.retrieve(entity.getStripeId());
+        ProductUpdateParams params = ProductUpdateParams.builder()
+                .setActive(false)
+                .build();
+        product.update(params);
         productRepository.delete(entity);
         return new JsonResponse<>(HttpStatus.OK, "Product deleted");
     }

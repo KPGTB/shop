@@ -19,7 +19,7 @@ public class ProductField extends BaseEntity {
     private boolean optional;
     @Enumerated(EnumType.STRING) private SessionCreateParams.CustomField.Type type;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "field_id")
     private List<ProductDropdownOption> options;
 

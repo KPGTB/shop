@@ -14,12 +14,12 @@ const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
 	const theme = useContext<Theme>(ThemeContext)
 	const [logged, user] = useAuth()
 	const [cartItems] = useCart()
-	const [categories, setCategories] = useState<Category[] | undefined>(
-		undefined
-	)
+	const [categories, setCategories] = useState<Category[] | undefined>([])
 
 	useEffect(() => {
-		headerLoader().then((data) => setCategories(data))
+		headerLoader()
+			.then((data) => setCategories(data))
+			.catch((e) => setCategories(undefined))
 	}, [])
 
 	return (
@@ -81,7 +81,7 @@ const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
 					</section>
 				</nav>
 			</header>
-			{categories?.length == 0 && (
+			{categories === undefined && (
 				<aside className={styles.apiError}>
 					<MdError /> An unexpected error occurred. The API did not
 					respond. The site may not function properly...

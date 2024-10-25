@@ -33,8 +33,8 @@ public class SecurityConfig implements WebMvcConfigurer {
         return http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests((req) -> req
                 // Authentication
-                .requestMatchers(HttpMethod.POST,"/auth/signin", "/auth/signup").anonymous()
-                .requestMatchers("/auth/*").authenticated()
+                .requestMatchers("/auth/info").authenticated()
+                .requestMatchers("/auth/*").anonymous()
                 // Category Controller
                 .requestMatchers(HttpMethod.POST,"/category").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
                 .requestMatchers(HttpMethod.PUT,"/category").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())

@@ -5,7 +5,6 @@ import {Link, useSearchParams} from "react-router-dom"
 import {Bounce, toast} from "react-toastify"
 
 import ThemeContext from "../../context/ThemeContext"
-import {Theme} from "../Layout"
 import styles from "./SigninPage.module.scss"
 
 const SigninPage = () => {
@@ -16,6 +15,20 @@ const SigninPage = () => {
 	useEffect(() => {
 		if (params.has("error")) {
 			toast.error("Incorrect e-mail or password!", {
+				position: "bottom-right",
+				autoClose: 5000,
+				hideProgressBar: false,
+				closeOnClick: false,
+				pauseOnHover: true,
+				draggable: false,
+				progress: undefined,
+				theme: theme,
+				transition: Bounce,
+			})
+		}
+
+		if (params.has("activated")) {
+			toast.success("Account activated!", {
 				position: "bottom-right",
 				autoClose: 5000,
 				hideProgressBar: false,

@@ -9,6 +9,7 @@ export default defineConfig(({mode}) => {
 		define: {
 			API_URL: JSON.stringify(env.API_URL),
 			BUSINESS_ACCOUNT_EMAIL: JSON.stringify(env.BUSINESS_ACCOUNT_EMAIL),
+			CAPTCHA_KEY: JSON.stringify(env.CAPTCHA_KEY),
 		},
 		plugins: [react()],
 	}

@@ -1,13 +1,14 @@
 package eu.kpgtb.shop.serivce;
 
+import eu.kpgtb.shop.data.entity.EmailTemplate;
+import eu.kpgtb.shop.data.repository.EmailTemplateRepository;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.*;
 
 @Getter @Builder
@@ -21,25 +22,29 @@ public class EmailData {
 
     private String template;
     @Singular private Map<String,String> placeholders;
+    private EmailTemplateRepository emailTemplateRepository;
+
+    public String getSubject() {
+        if(this.subject != null) return this.subject;
+        if(this.template == null) return null;
+
+        EmailTemplate entity = emailTemplateRepository.findByType(this.template);
+        return entity != null ? entity.getSubject() : null;
+    }
 
     @SneakyThrows
     public String getContent() {
         if(this.html != null) return this.html;
+        if(this.template == null) return null;
 
-        String content = "";
-        File file = new File(this.template);
-        if(!file.exists()) return "";
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String line;
-        while((line = reader.readLine()) != null) {
-            content += line;
-        }
-        reader.close();
-
+        EmailTemplate entity = this.emailTemplateRepository.findByType(this.template);
+        String content = entity != null ? entity.getContent() : "";
         for (Map.Entry<String, String> entry : this.placeholders.entrySet()) {
-            content = content.replace(entry.getKey(), entry.getValue());
+            content = content.replace("{{" + entry.getKey() + "}}", entry.getValue());
         }
 
         return content;
     }
+
+
 }

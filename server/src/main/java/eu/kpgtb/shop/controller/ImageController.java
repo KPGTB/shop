@@ -1,7 +1,7 @@
 package eu.kpgtb.shop.controller;
 
 import eu.kpgtb.shop.config.Properties;
-import eu.kpgtb.shop.serivce.IS3Service;
+import eu.kpgtb.shop.serivce.iface.IS3Service;
 import eu.kpgtb.shop.util.JsonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

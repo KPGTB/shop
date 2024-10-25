@@ -8,6 +8,7 @@ import BusinessLayout from "./pages/[business]/Layout"
 import businessProductsLoader from "./pages/[business]/Products/ProductsLoader"
 import BusinessProductsPage from "./pages/[business]/Products/ProductsPage"
 import CustomerDashboardPage from "./pages/[customer]/Dashboard/DashboardPage"
+import ActivationPage from "./pages/Activate/ActivationPage"
 import cartLoader from "./pages/Cart/CartLoader"
 import CartPage from "./pages/Cart/CartPage"
 import categoryLoader from "./pages/Category/CategoryLoader"
@@ -19,6 +20,7 @@ import LandingPage from "./pages/Landing/LandingPage"
 import Layout from "./pages/Layout"
 import PaymentPage from "./pages/Payment/PaymentPage"
 import SigninPage from "./pages/Signin/SigninPage"
+import SignupPage from "./pages/Signup/SignupPage"
 import AuthService, {
 	roleMiddleware,
 	unauthenticatedMiddleware,
@@ -41,6 +43,16 @@ const router = createBrowserRouter([
 				path: "signin",
 				loader: () => unauthenticatedMiddleware(authService),
 				element: <SigninPage />,
+			},
+			{
+				path: "signup",
+				loader: () => unauthenticatedMiddleware(authService),
+				element: <SignupPage />,
+			},
+			{
+				path: "activate",
+				loader: () => unauthenticatedMiddleware(authService),
+				element: <ActivationPage />,
 			},
 			{
 				path: "customer",

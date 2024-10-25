@@ -15,12 +15,10 @@ public class User implements UserDetails {
     private UserEntity entity;
 
     private PrivateUserInfo privateUserInfo;
-    private PublicUserInfo publicUserInfo;
 
     public User(UserEntity entity) {
         this.entity = entity;
-        this.privateUserInfo = new PrivateUserInfo(entity.getEmail(),entity.getRole(), entity.getName(),entity.getSurname(),entity.getGender(),entity.getBirthDate());
-        this.publicUserInfo = new PublicUserInfo(entity.getName());
+        this.privateUserInfo = new PrivateUserInfo(entity.getEmail(),entity.getRole());
     }
 
     @Override
@@ -50,10 +48,9 @@ public class User implements UserDetails {
     }
     @Override
     public boolean isEnabled() {
-        return true;
+        return this.entity.isActive();
     }
 
 
-    public record PrivateUserInfo(String email, UserEntity.UserRole role, String name, String surname, UserEntity.Gender gender, Date birthDate) {}
-    public record PublicUserInfo(String name) {}
+    public record PrivateUserInfo(String email, UserEntity.UserRole role) {}
 }

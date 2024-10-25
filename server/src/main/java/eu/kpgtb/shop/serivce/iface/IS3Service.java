@@ -1,4 +1,4 @@
-package eu.kpgtb.shop.serivce;
+package eu.kpgtb.shop.serivce.iface;
 
 import java.io.File;
 

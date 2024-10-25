@@ -16,17 +16,10 @@ import java.sql.Date;
 public class UserEntity extends BaseEntity{
     private String email;
     private String password;
+    private String verificationToken;
+    private boolean active;
 
     @Enumerated(EnumType.STRING) private UserRole role;
-
-    private String name;
-    private String surname;
-    @Enumerated(EnumType.STRING) private Gender gender;
-    private Date birthDate;
-
-    public enum Gender {
-        MALE,FEMALE,OTHER
-    }
 
     @Getter
     public enum UserRole {

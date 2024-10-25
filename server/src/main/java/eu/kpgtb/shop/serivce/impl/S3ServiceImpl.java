@@ -1,6 +1,7 @@
-package eu.kpgtb.shop.serivce;
+package eu.kpgtb.shop.serivce.impl;
 
 import eu.kpgtb.shop.config.Properties;
+import eu.kpgtb.shop.serivce.iface.IS3Service;
 import lombok.SneakyThrows;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -15,7 +16,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
-public class S3ServiceImpl implements IS3Service{
+public class S3ServiceImpl implements IS3Service {
     private final S3Client client;
 
     @SneakyThrows

@@ -1,6 +1,6 @@
 package eu.kpgtb.shop;
 
-import eu.kpgtb.shop.serivce.IEmailService;
+import eu.kpgtb.shop.serivce.iface.IEmailService;
 import eu.kpgtb.shop.util.JsonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;

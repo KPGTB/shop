@@ -19,7 +19,7 @@ import eu.kpgtb.shop.data.repository.order.OrderProductRepository;
 import eu.kpgtb.shop.data.repository.order.OrderRepository;
 import eu.kpgtb.shop.data.repository.product.ProductFieldRepository;
 import eu.kpgtb.shop.data.repository.product.ProductRepository;
-import eu.kpgtb.shop.serivce.IS3Service;
+import eu.kpgtb.shop.serivce.iface.IS3Service;
 import eu.kpgtb.shop.util.JsonResponse;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -30,4 +30,6 @@ public class Properties {
     private String s3PrivateBucket = "";
     private String s3PublicBucket = "";
     private String s3PublicUrl = "";
+
+    private String captchaSecret = "";
 }

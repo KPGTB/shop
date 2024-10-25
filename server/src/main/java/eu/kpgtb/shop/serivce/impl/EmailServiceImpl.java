@@ -1,6 +1,8 @@
-package eu.kpgtb.shop.serivce;
+package eu.kpgtb.shop.serivce.impl;
 
 import eu.kpgtb.shop.config.Properties;
+import eu.kpgtb.shop.serivce.EmailData;
+import eu.kpgtb.shop.serivce.iface.IEmailService;
 import jakarta.mail.internet.MimeMessage;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 
 import java.io.File;
 
-public class EmailServiceImpl implements IEmailService{
+public class EmailServiceImpl implements IEmailService {
     @Autowired
     private Properties properties;
     @Autowired

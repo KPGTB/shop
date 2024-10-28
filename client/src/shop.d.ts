@@ -1,8 +1,9 @@
 type Category = {
 	id: number
 	name: string
-	description?: string
+	description: string
 	nameInUrl: string
+	productsId?: number[]
 }
 type TaxCode = {
 	id: string
@@ -26,6 +27,8 @@ type Product = {
 	image: string
 	currency: string
 	price: number
+	displayTax: number
+	displayPrice: number
 	taxCode: string
 	categoryId: number
 	fields: Field[]

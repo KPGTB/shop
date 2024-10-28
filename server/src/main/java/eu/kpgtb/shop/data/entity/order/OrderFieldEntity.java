@@ -1,7 +1,7 @@
 package eu.kpgtb.shop.data.entity.order;
 
 import eu.kpgtb.shop.data.entity.BaseEntity;
-import eu.kpgtb.shop.data.entity.product.ProductField;
+import eu.kpgtb.shop.data.entity.product.ProductFieldEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -10,13 +10,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity(name = "order_field")
 @Getter @Setter
-@Entity
-public class OrderProductField extends BaseEntity {
+@AllArgsConstructor @NoArgsConstructor
+public class OrderFieldEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "field_id")
-    private ProductField field;
-    private String value;
+    ProductFieldEntity field;
+    String value;
 }

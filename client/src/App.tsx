@@ -1,10 +1,10 @@
 import "./globals.scss"
 
 import ReactDOM from "react-dom/client"
-import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom"
+import {createBrowserRouter, RouterProvider} from "react-router-dom"
 
+import AccountPageLayout from "./components/layout/AccountPageLayout/AccountPageLayout"
 import BusinessDashboardPage from "./pages/[business]/Dashboard/DashboardPage"
-import BusinessLayout from "./pages/[business]/Layout"
 import businessProductsLoader from "./pages/[business]/Products/ProductsLoader"
 import BusinessProductsPage from "./pages/[business]/Products/ProductsPage"
 import CustomerDashboardPage from "./pages/[customer]/Dashboard/DashboardPage"
@@ -56,7 +56,15 @@ const router = createBrowserRouter([
 			},
 			{
 				path: "customer",
-				element: <Outlet />,
+				element: (
+					<AccountPageLayout
+						links={[
+							{to: "/customer/dashboard", label: "Dashboard"},
+							{to: "/customer/orders", label: "Orders"},
+							{to: "/customer/settings", label: "Settings"},
+						]}
+					/>
+				),
 				loader: () => roleMiddleware(authService, "CUSTOMER"),
 				children: [
 					{path: "dashboard", element: <CustomerDashboardPage />},
@@ -64,7 +72,19 @@ const router = createBrowserRouter([
 			},
 			{
 				path: "business",
-				element: <BusinessLayout />,
+				element: (
+					<AccountPageLayout
+						links={[
+							{to: "/business/dashboard", label: "Dashboard"},
+							{to: "/business/products", label: "Products"},
+							{to: "/business/discounts", label: "Discounts"},
+							{to: "/business/orders", label: "Orders"},
+							{to: "/business/newsletter", label: "Newsletter"},
+							{to: "/business/apparance", label: "Apparance"},
+							{to: "/business/settings", label: "Settings"},
+						]}
+					/>
+				),
 				loader: () => roleMiddleware(authService, "BUSINESS"),
 				children: [
 					{path: "dashboard", element: <BusinessDashboardPage />},

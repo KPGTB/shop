@@ -3,6 +3,7 @@ import {FaTrashCan, FaWallet} from "react-icons/fa6"
 import {Link, useLoaderData} from "react-router-dom"
 
 import {useCart} from "../../context/CartContext"
+import {toPrice} from "../../util/PriceUtil"
 import styles from "./CartPage.module.scss"
 
 const CartPage = () => {
@@ -13,7 +14,9 @@ const CartPage = () => {
 		let price = 0
 		cartItems.forEach(
 			(item) =>
-				(price += item.quantity * products.get(item.productId)!.price)
+				(price +=
+					item.quantity *
+					(products.get(item.productId)?.displayPrice || 0.0))
 		)
 		return price
 	}, [cartItems])
@@ -52,9 +55,10 @@ const CartPage = () => {
 								</Link>
 							</h3>
 							<p>
-								{item.quantity} x {product.price}{" "}
+								{item.quantity} x{" "}
+								{toPrice(product.displayPrice)}{" "}
 								{product.currency} ={" "}
-								{item.quantity * product.price}{" "}
+								{toPrice(item.quantity * product.displayPrice)}{" "}
 								{product.currency}
 							</p>
 							<button
@@ -98,7 +102,7 @@ const CartPage = () => {
 								<b>
 									{product.name} x {item.quantity}
 								</b>{" "}
-								{item.quantity * product.price}{" "}
+								{toPrice(item.quantity * product.displayPrice)}{" "}
 								{product.currency}
 								<br />
 							</i>
@@ -106,7 +110,7 @@ const CartPage = () => {
 					})}
 					<br />
 					<span className={styles.total}>
-						<b>Total: </b> {totalPrice} {currency}
+						<b>Total: </b> {toPrice(totalPrice)} {currency}
 					</span>
 				</p>
 

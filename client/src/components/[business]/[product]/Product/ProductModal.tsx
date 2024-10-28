@@ -115,6 +115,22 @@ const ProductModal = ({
 								required
 							/>
 
+							<label htmlFor="displayTax">
+								<FaCoins /> Display Tax
+							</label>
+							<input
+								type="number"
+								inputMode="numeric"
+								step="0.01"
+								id="displayTax"
+								name="displayTax"
+								placeholder={"Display Tax"}
+								defaultValue={
+									data !== undefined ? data.displayTax : ""
+								}
+								required
+							/>
+
 							<label htmlFor="image">
 								<MdImage /> Image
 							</label>

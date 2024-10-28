@@ -8,13 +8,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity(name = "product_field_option")
 @Getter @Setter
-@Entity
-public class ProductDropdownOption extends BaseEntity {
-    private String label;
-    private String value;
+@AllArgsConstructor @NoArgsConstructor
+public class ProductFieldOptionEntity extends BaseEntity {
+    String label;
+    String value;
 
     public SessionCreateParams.CustomField.Dropdown.Option getStripeObject() {
         return SessionCreateParams.CustomField.Dropdown.Option.builder()

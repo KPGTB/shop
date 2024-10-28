@@ -10,10 +10,10 @@ import eu.kpgtb.shop.auth.User;
 import eu.kpgtb.shop.config.Properties;
 import eu.kpgtb.shop.data.entity.order.OrderEntity;
 import eu.kpgtb.shop.data.entity.order.OrderProductEntity;
-import eu.kpgtb.shop.data.entity.order.OrderProductField;
+import eu.kpgtb.shop.data.entity.order.OrderFieldEntity;
 import eu.kpgtb.shop.data.entity.product.ProductEntity;
 import eu.kpgtb.shop.data.entity.UserEntity;
-import eu.kpgtb.shop.data.entity.product.ProductField;
+import eu.kpgtb.shop.data.entity.product.ProductFieldEntity;
 import eu.kpgtb.shop.data.repository.order.OrderProductFieldRepository;
 import eu.kpgtb.shop.data.repository.order.OrderProductRepository;
 import eu.kpgtb.shop.data.repository.order.OrderRepository;
@@ -40,6 +40,7 @@ import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequestMapping("/payment")
@@ -66,6 +67,7 @@ public class PaymentController {
         List<SessionCreateParams.LineItem> items = new ArrayList<>();
         List<SessionCreateParams.CustomField> customFields = new ArrayList<>();
         List<OrderProductEntity> opEntities = new ArrayList<>();
+        AtomicReference<Double> total = new AtomicReference<>(0.0);
 
         // Collect products from body
         body.toSingleValueMap().forEach((pIdStr, quantityStr) -> {
@@ -85,6 +87,7 @@ public class PaymentController {
                                 .setPrice(product.getDefaultPrice())
                                 .build()
                 );
+                total.updateAndGet(v -> v + (entity.getPrice() * quantity));
             } catch (StripeException e) {
                 e.printStackTrace();
                 return;
@@ -105,6 +108,10 @@ public class PaymentController {
                 .products(opEntities)
                 .status(OrderEntity.OrderStatus.PAYING)
                 .orderDate(new Timestamp(Instant.now().toEpochMilli()))
+                .total(total.get())
+                .subtotal(total.get())
+                .tax(0.0)
+                .discount(0.0)
                 .build();
         orderRepository.save(orderEntity);
 
@@ -198,6 +205,7 @@ public class PaymentController {
         Session.CustomerDetails details = session.getCustomerDetails();
         Invoice invoice = session.getInvoiceObject();
         Charge charge = session.getInvoiceObject().getChargeObject();
+        Session.TotalDetails totalDetails = session.getTotalDetails();
 
         String receiptUrl = charge.getReceiptUrl().split("\\?", 2)[0] + "/pdf?s=ap";
         String invoiceUrl = invoice.getInvoicePdf();
@@ -211,23 +219,32 @@ public class PaymentController {
         orderEntity.setContactData(details);
         orderEntity.setBillingAddress(details);
         orderEntity.setInvoiceNumber(invoiceNumber);
+        orderEntity.setTotal(session.getAmountTotal() / 100.0);
+        orderEntity.setSubtotal(session.getAmountSubtotal() / 100.0);
+        orderEntity.setTax(totalDetails.getAmountTax() != null ? totalDetails.getAmountTax() / 100.0 : 0.0);
+        orderEntity.setDiscount(totalDetails.getAmountDiscount() != null ? totalDetails.getAmountDiscount() / 100.0 : 0.0);
 
         // Read custom fields
-        Map<Integer, List<OrderProductField>> fieldsData = new HashMap<>();
+        Map<Integer, List<OrderFieldEntity>> fieldsData = new HashMap<>();
         session.getCustomFields().forEach(field -> {
             String[] key = field.getKey().split("-",2);
             int pId = Integer.parseInt(key[0]);
             int fId = Integer.parseInt(key[1]);
 
             Optional<ProductEntity> productEntityOpt = productRepository.findById(pId);
-            Optional<ProductField> fieldEntityOpt = productFieldRepository.findById(fId);
+            Optional<ProductFieldEntity> fieldEntityOpt = productFieldRepository.findById(fId);
 
             if(productEntityOpt.isEmpty() || fieldEntityOpt.isEmpty()) return;
 
-            OrderProductField opf = new OrderProductField(
-                    fieldEntityOpt.get(),field.getText() != null ? field.getText().getValue() : null
-            );
+            String value;
+            switch (field.getType()) {
+                case "text" -> value = field.getText().getValue();
+                case "numeric" -> value = field.getNumeric().getValue();
+                case "dropdown" -> value = field.getDropdown().getValue();
+                default -> value = null;
+            }
 
+            OrderFieldEntity opf = new OrderFieldEntity(fieldEntityOpt.get(),value);
             fieldsData.putIfAbsent(pId, new ArrayList<>());
             fieldsData.get(pId).add(opf);
         });

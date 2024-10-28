@@ -7,13 +7,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor @NoArgsConstructor
+
+@Entity(name = "email_template")
 @Getter @Setter
-@Entity
-public class EmailTemplate extends BaseEntity{
-    private String type;
-    private String subject;
-    @Lob private String content;
+@AllArgsConstructor @NoArgsConstructor
+public class EmailTemplateEntity extends BaseEntity{
+    String type;
+    String subject;
+    @Lob
+    String content;
 
     public enum CommonTemplateType {
         ACCOUNT_ACTIVATION,FORGOT_PASSWORD

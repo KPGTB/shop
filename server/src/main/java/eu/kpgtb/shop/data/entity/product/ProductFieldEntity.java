@@ -10,18 +10,18 @@ import lombok.Setter;
 
 import java.util.List;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity(name = "product_field")
 @Getter @Setter
-@Entity
-public class ProductField extends BaseEntity {
-    private String label;
-    private boolean optional;
-    @Enumerated(EnumType.STRING) private SessionCreateParams.CustomField.Type type;
+@AllArgsConstructor @NoArgsConstructor
+public class ProductFieldEntity extends BaseEntity {
+    String label;
+    boolean optional;
+    @Enumerated(EnumType.STRING)
+    SessionCreateParams.CustomField.Type type;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "field_id")
-    private List<ProductDropdownOption> options;
+    List<ProductFieldOptionEntity> options;
 
     public SessionCreateParams.CustomField getStripeObject(int pId, String productName) {
         return SessionCreateParams.CustomField.builder()
@@ -38,7 +38,7 @@ public class ProductField extends BaseEntity {
                         :
                             SessionCreateParams.CustomField.Dropdown.builder()
                                 .addAllOption(
-                                        this.options.stream().map(ProductDropdownOption::getStripeObject).toList()
+                                        this.options.stream().map(ProductFieldOptionEntity::getStripeObject).toList()
                                 ).build()
                 ).build();
     }

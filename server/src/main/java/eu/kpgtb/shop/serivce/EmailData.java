@@ -1,12 +1,11 @@
 package eu.kpgtb.shop.serivce;
 
-import eu.kpgtb.shop.data.entity.EmailTemplate;
+import eu.kpgtb.shop.data.entity.EmailTemplateEntity;
 import eu.kpgtb.shop.data.repository.EmailTemplateRepository;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.util.*;
@@ -28,7 +27,7 @@ public class EmailData {
         if(this.subject != null) return this.subject;
         if(this.template == null) return null;
 
-        EmailTemplate entity = emailTemplateRepository.findByType(this.template);
+        EmailTemplateEntity entity = emailTemplateRepository.findByType(this.template);
         return entity != null ? entity.getSubject() : null;
     }
 
@@ -37,7 +36,7 @@ public class EmailData {
         if(this.html != null) return this.html;
         if(this.template == null) return null;
 
-        EmailTemplate entity = this.emailTemplateRepository.findByType(this.template);
+        EmailTemplateEntity entity = this.emailTemplateRepository.findByType(this.template);
         String content = entity != null ? entity.getContent() : "";
         for (Map.Entry<String, String> entry : this.placeholders.entrySet()) {
             content = content.replace("{{" + entry.getKey() + "}}", entry.getValue());

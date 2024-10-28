@@ -33,7 +33,6 @@ public class SecurityConfig implements WebMvcConfigurer {
         return http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests((req) -> req
                 // Authentication
-                .requestMatchers("/auth/info").authenticated()
                 .requestMatchers("/auth/*").anonymous()
                 // Category Controller
                 .requestMatchers(HttpMethod.POST,"/category").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
@@ -46,6 +45,9 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .requestMatchers(HttpMethod.DELETE, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
                 // Image
                 .requestMatchers(HttpMethod.PUT, "/image/upload").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                // User
+                .requestMatchers("/user", "/user/*").authenticated()
+                // ===
                 .anyRequest().permitAll()
             ).formLogin((form) -> form
                 .loginPage("/auth/signin")

@@ -9,40 +9,45 @@ import lombok.*;
 import java.sql.Timestamp;
 import java.util.List;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter @Setter
-@Builder
 @Entity(name = "shop_order")
+@Getter @Setter @Builder
+@AllArgsConstructor @NoArgsConstructor
 public class OrderEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private UserEntity user;
+    UserEntity user;
 
-    private String orderEmail;
-    private String customer;
-    private String phoneNumber;
-    private String country;
-    private String state;
-    private String address1;
-    private String address2;
-    private String postalCode;
-    private String city;
+    String orderEmail;
+    String customer;
+    String phoneNumber;
+    String country;
+    String state;
+    String address1;
+    String address2;
+    String postalCode;
+    String city;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id")
-    private List<OrderProductEntity> products;
+    List<OrderProductEntity> products;
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+    OrderStatus status;
 
-    private String stripeId;
-    @Lob private String paymentUrl;
-    @Lob private String invoiceNumber;
+    String stripeId;
+    @Lob
+    String paymentUrl;
+    @Lob
+    String invoiceNumber;
 
-    private Timestamp orderDate;
-    private Timestamp paymentDate;
-    private Timestamp completionDate;
+    double total;
+    double subtotal;
+    double tax;
+    double discount;
+
+    Timestamp orderDate;
+    Timestamp paymentDate;
+    Timestamp completionDate;
 
     public void setContactData(Session.CustomerDetails details) {
         this.orderEmail =details.getEmail();

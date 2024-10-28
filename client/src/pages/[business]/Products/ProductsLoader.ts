@@ -1,5 +1,5 @@
 const businessProductsLoader = async () => {
-	const categoriesRes = await fetch(`${API_URL}/category/list/full`)
+	const categoriesRes = await fetch(`${API_URL}/category/list`)
 	if (categoriesRes.status !== 200) return []
 	const categoriesJson = await categoriesRes.json()
 

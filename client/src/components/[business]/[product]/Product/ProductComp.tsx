@@ -1,5 +1,6 @@
 import {FaPen, FaPlus, FaTrashCan} from "react-icons/fa6"
 
+import {toPrice} from "../../../../util/PriceUtil"
 import styles from "./Product.module.scss"
 
 const ProductComp = ({product, edit}: {product: Product; edit: () => void}) => {
@@ -15,7 +16,7 @@ const ProductComp = ({product, edit}: {product: Product; edit: () => void}) => {
 				{product.nameInUrl}.{product.id}
 			</p>
 			<p>
-				{product.price} {product.currency}
+				{toPrice(product.displayPrice)} {product.currency}
 			</p>
 			<section className={styles.buttons}>
 				<button

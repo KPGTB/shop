@@ -5,6 +5,7 @@ import {Bounce, toast} from "react-toastify"
 
 import {useCart} from "../../../context/CartContext"
 import ThemeContext from "../../../context/ThemeContext"
+import {toPrice} from "../../../util/PriceUtil"
 import styles from "./ProductPage.module.scss"
 
 const ProductPage = () => {
@@ -80,7 +81,8 @@ const ProductPage = () => {
 
 							<button onClick={addToCart}>
 								<FaCartPlus /> Add to cart -{" "}
-								{product.price * quantity} {product.currency}
+								{toPrice(product.displayPrice * quantity)}{" "}
+								{product.currency}
 							</button>
 						</section>
 					</section>

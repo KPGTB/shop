@@ -5,7 +5,7 @@ class AuthService {
 
 	fetchUser = async () => {
 		try {
-			const res = await fetch(API_URL + "/auth/info", {
+			const res = await fetch(API_URL + "/user", {
 				credentials: "include",
 			})
 

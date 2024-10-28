@@ -1,5 +1,6 @@
 import {Link, useLoaderData} from "react-router-dom"
 
+import {toPrice} from "../../util/PriceUtil"
 import styles from "./CategoryPage.module.scss"
 
 const CategoryPage = () => {
@@ -34,7 +35,7 @@ const ProductComp = ({product}: {product: Product}) => {
 			<p className={styles.desc}>{product.description}</p>
 
 			<p>
-				{product.price} {product.currency}
+				{toPrice(product.displayPrice)} {product.currency}
 			</p>
 		</Link>
 	)

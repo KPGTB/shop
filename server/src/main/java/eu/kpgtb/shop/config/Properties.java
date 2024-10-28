@@ -20,6 +20,7 @@ public class Properties {
     private String stripePrivateKey = "";
     private String stripeWebhookKey = "";
     private String stripeCurrency = "USD";
+    private String stripeTaxBehaviour = "EXCLUSIVE";
     private boolean stripeCollectPhoneNumber = false;
     private boolean stripeCollectBillingAddress = false;
 

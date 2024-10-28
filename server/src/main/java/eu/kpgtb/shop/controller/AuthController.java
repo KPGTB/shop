@@ -1,8 +1,7 @@
 package eu.kpgtb.shop.controller;
 
-import eu.kpgtb.shop.auth.User;
 import eu.kpgtb.shop.config.Properties;
-import eu.kpgtb.shop.data.entity.EmailTemplate;
+import eu.kpgtb.shop.data.entity.EmailTemplateEntity;
 import eu.kpgtb.shop.data.entity.UserEntity;
 import eu.kpgtb.shop.data.repository.EmailTemplateRepository;
 import eu.kpgtb.shop.data.repository.UserRepository;
@@ -13,12 +12,11 @@ import eu.kpgtb.shop.util.JsonResponse;
 import lombok.SneakyThrows;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
 
@@ -32,11 +30,6 @@ public class AuthController {
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private IEmailService emailService;
     @Autowired private EmailTemplateRepository emailTemplateRepository;
-
-    @GetMapping("/info")
-    public JsonResponse<User.PrivateUserInfo> info(Authentication authentication) {
-        return new JsonResponse<>(HttpStatus.OK, "Success", ((User)authentication.getPrincipal()).getPrivateUserInfo());
-    }
 
     @SneakyThrows
     @PostMapping("/signup")
@@ -72,7 +65,7 @@ public class AuthController {
     @Async
     private void sendActivationEmail(String email, String token) {
         emailService.sendEmail(EmailData.builder()
-                .template(EmailTemplate.CommonTemplateType.ACCOUNT_ACTIVATION.name())
+                .template(EmailTemplateEntity.CommonTemplateType.ACCOUNT_ACTIVATION.name())
                 .to(email)
                 .placeholder("url", properties.getFrontendUrl() + "/activate?token="+token)
                 .emailTemplateRepository(this.emailTemplateRepository)
@@ -81,9 +74,13 @@ public class AuthController {
 
     @PostMapping("/activate")
     @SneakyThrows
-    private JsonResponse<Object> verify(VerifyBody body) {
+    public Object verify(VerifyBody body) {
         if(!captchaService.verify(body.captcha)) {
             return new JsonResponse<>(properties.getFrontendUrl() + "/activate?captcha");
+        }
+
+        if(body.token.isEmpty()) {
+            return new JsonResponse<>(properties.getFrontendUrl() + "/activate?error");
         }
 
         UserEntity entity = this.userRepository.findByVerificationToken(body.token);
@@ -94,6 +91,7 @@ public class AuthController {
         entity.setActive(true);
         entity.setVerificationToken(null);
         this.userRepository.save(entity);
+
         return new JsonResponse<>(properties.getFrontendUrl() + "/signin?activated");
     }
 

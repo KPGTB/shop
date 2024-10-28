@@ -10,16 +10,15 @@ import lombok.Setter;
 
 import java.util.List;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter @Setter
 @Entity(name = "order_product")
+@Getter @Setter
+@AllArgsConstructor @NoArgsConstructor
 public class OrderProductEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "product_id")
-    private ProductEntity product;
-    private int quantity;
+    ProductEntity product;
+    int quantity;
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_product_id")
-    List<OrderProductField> fields;
+    List<OrderFieldEntity> fields;
 }

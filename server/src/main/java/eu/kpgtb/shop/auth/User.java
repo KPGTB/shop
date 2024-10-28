@@ -6,19 +6,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.sql.Date;
 import java.util.Arrays;
 import java.util.Collection;
 
 @Getter
 public class User implements UserDetails {
-    private UserEntity entity;
-
-    private PrivateUserInfo privateUserInfo;
+    private final UserEntity entity;
 
     public User(UserEntity entity) {
         this.entity = entity;
-        this.privateUserInfo = new PrivateUserInfo(entity.getEmail(),entity.getRole());
     }
 
     @Override
@@ -50,7 +46,4 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return this.entity.isActive();
     }
-
-
-    public record PrivateUserInfo(String email, UserEntity.UserRole role) {}
 }

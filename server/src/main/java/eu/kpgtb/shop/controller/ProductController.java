@@ -7,9 +7,10 @@ import com.stripe.model.Product;
 import com.stripe.model.TaxCode;
 import com.stripe.param.*;
 import eu.kpgtb.shop.config.Properties;
-import eu.kpgtb.shop.data.entity.product.Category;
+import eu.kpgtb.shop.data.dto.product.ProductDto;
+import eu.kpgtb.shop.data.entity.product.CategoryEntity;
 import eu.kpgtb.shop.data.entity.product.ProductEntity;
-import eu.kpgtb.shop.data.entity.product.ProductField;
+import eu.kpgtb.shop.data.entity.product.ProductFieldEntity;
 import eu.kpgtb.shop.data.repository.product.CategoryRepository;
 import eu.kpgtb.shop.data.repository.product.ProductDropdownOptionRepository;
 import eu.kpgtb.shop.data.repository.product.ProductFieldRepository;
@@ -58,11 +59,13 @@ public class ProductController {
     }
 
     @GetMapping
-    public JsonResponse<ProductEntity.ProductDisplay> info(@RequestParam(value = "id") int id) {
+    public JsonResponse<ProductDto> info(@RequestParam(value = "id") int id) {
         Optional<ProductEntity> result = productRepository.findById(id);
 
         return result
-                .map(product -> new JsonResponse<>(HttpStatus.OK, "Product info", product.getDisplay()))
+                .map(product -> new JsonResponse<>(HttpStatus.OK, "Product info", new ProductDto(
+                        product, Arrays.asList("fields", "fields.options", "category"),""
+                )))
                 .orElseGet(() -> new JsonResponse<>(HttpStatus.NOT_FOUND, "Product not found"));
     }
 
@@ -84,8 +87,8 @@ public class ProductController {
     }
 
     @PutMapping
-    public JsonResponse<Boolean> create(@RequestBody ProductCreateBody body) throws StripeException {
-        Optional<Category> categoryOpt = categoryRepository.findById(body.categoryId);
+    public JsonResponse<Boolean> create(@RequestBody ProductBody body) throws StripeException {
+        Optional<CategoryEntity> categoryOpt = categoryRepository.findById(body.categoryId);
         if(categoryOpt.isEmpty()) {
             return new JsonResponse<>(HttpStatus.NOT_FOUND, "Category not found");
         }
@@ -99,13 +102,12 @@ public class ProductController {
                         ProductCreateParams.DefaultPriceData.builder()
                                 .setUnitAmount(Math.round(body.price*100.0))
                                 .setCurrency(properties.getStripeCurrency())
-                                .setTaxBehavior(ProductCreateParams.DefaultPriceData.TaxBehavior.EXCLUSIVE)
+                                .setTaxBehavior(ProductCreateParams.DefaultPriceData.TaxBehavior.valueOf(properties.getStripeTaxBehaviour()))
                                 .build()
                 )
                 .addExpand("default_price")
                 .build();
         Product product = Product.create(params);
-
         ProductEntity entity = new ProductEntity(
                 body.name,
                 body.nameInUrl,
@@ -114,6 +116,7 @@ public class ProductController {
                 properties.getStripeCurrency(),
                 body.price,
                 body.taxCode,
+                body.displayTax,
                 product.getId(),
                 categoryOpt.get(),
                 body.fields
@@ -123,8 +126,8 @@ public class ProductController {
     }
 
     @PostMapping
-    public JsonResponse<Boolean> edit(@RequestBody ProductEditBody body) throws StripeException {
-        Optional<Category> categoryOpt = categoryRepository.findById(body.categoryId);
+    public JsonResponse<Boolean> edit(@RequestBody ProductBody body) throws StripeException {
+        Optional<CategoryEntity> categoryOpt = categoryRepository.findById(body.categoryId);
         if(categoryOpt.isEmpty()) {
             return new JsonResponse<>(HttpStatus.NOT_FOUND, "Category not found");
         }
@@ -167,6 +170,7 @@ public class ProductController {
         entity.setCategory(categoryOpt.get());
         entity.setFields(body.fields);
         entity.setTaxCode(body.taxCode);
+        entity.setDisplayTax(body.displayTax);
 
         product.update(productParams);
         productRepository.save(entity);
@@ -218,7 +222,6 @@ public class ProductController {
         return new JsonResponse<>(HttpStatus.OK, "Updated");
     }
 
-    record ProductCreateBody(String name, String nameInUrl,String description, String image, double price, String taxCode, int categoryId, List<ProductField> fields) {}
-    record ProductEditBody(int id, String name, String description, String nameInUrl, String image, double price,String taxCode, int categoryId, List<ProductField> fields) {}
+    record ProductBody(int id, String name, String description, String nameInUrl, String image, double price,String taxCode, double displayTax,int categoryId, List<ProductFieldEntity> fields) {}
     record TaxData(boolean hasMore, List<TaxCode> codes) {}
 }

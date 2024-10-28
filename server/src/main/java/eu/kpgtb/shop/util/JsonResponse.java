@@ -1,6 +1,5 @@
 package eu.kpgtb.shop.util;
 
-import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +37,7 @@ public class JsonResponse<T> extends ResponseEntity<JsonResponse.Response<T>> {
     public JsonResponse(URI location) {
         super(
                 locationHeaders(location),
-                HttpStatus.TEMPORARY_REDIRECT
+                HttpStatus.SEE_OTHER
         );
     }
 

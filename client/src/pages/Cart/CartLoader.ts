@@ -7,7 +7,7 @@ const cartLoader = async () => {
 
 	for (let item of itemsData) {
 		const res = await fetch(API_URL + "/product?id=" + item.productId)
-		if (res.status !== 200) return
+		if (res.status !== 200) continue
 		const json = await res.json()
 		result.set(item.productId, json.data)
 	}

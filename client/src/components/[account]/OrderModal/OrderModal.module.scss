@@ -1,0 +1,58 @@
+.infoContainer {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 5rem;
+
+	p,
+	h4 {
+		margin: 0;
+		word-break: break-all;
+	}
+}
+
+.productsContainer {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: 5rem;
+
+	table {
+		td:first-child {
+			padding-right: 1rem;
+			font-weight: bold;
+		}
+
+		td:nth-child(2) {
+			font-style: italic;
+			opacity: 0.75;
+		}
+	}
+}
+
+.product {
+	width: 100%;
+	margin-bottom: 3rem;
+
+	display: grid;
+	grid-template-columns: 1fr 3fr;
+	gap: 3rem;
+	align-items: center;
+
+	img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 1/1;
+		object-fit: cover;
+		border-radius: 0.5rem;
+	}
+}
+
+.productInfo {
+	p {
+		margin: 0;
+	}
+}
+
+.productPrice {
+	text-align: right;
+	font-weight: bold;
+}

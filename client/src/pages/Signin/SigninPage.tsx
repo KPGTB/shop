@@ -2,44 +2,19 @@ import {useContext, useEffect, useState} from "react"
 import {MdEmail} from "react-icons/md"
 import {RiLockPasswordFill} from "react-icons/ri"
 import {Link, useSearchParams} from "react-router-dom"
-import {Bounce, toast} from "react-toastify"
 
 import ThemeContext from "../../context/ThemeContext"
+import {errorIf, successIf} from "../../util/ToastUtl"
 import styles from "./SigninPage.module.scss"
 
 const SigninPage = () => {
 	const [accType, setAccType] = useState<string>("customer")
-	const [params, setParams] = useSearchParams()
+	const [params] = useSearchParams()
 	const theme = useContext<Theme>(ThemeContext)
 
 	useEffect(() => {
-		if (params.has("error")) {
-			toast.error("Incorrect e-mail or password!", {
-				position: "bottom-right",
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: false,
-				pauseOnHover: true,
-				draggable: false,
-				progress: undefined,
-				theme: theme,
-				transition: Bounce,
-			})
-		}
-
-		if (params.has("activated")) {
-			toast.success("Account activated!", {
-				position: "bottom-right",
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: false,
-				pauseOnHover: true,
-				draggable: false,
-				progress: undefined,
-				theme: theme,
-				transition: Bounce,
-			})
-		}
+		errorIf(params.has("error"), "Incorrect e-mail or password!", theme)
+		successIf(params.has("activated"), "Account activated!", theme)
 	}, [])
 
 	return (

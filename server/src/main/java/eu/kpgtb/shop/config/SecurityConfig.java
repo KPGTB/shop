@@ -43,11 +43,11 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .requestMatchers(HttpMethod.POST, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
                 .requestMatchers(HttpMethod.PUT, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
                 .requestMatchers(HttpMethod.DELETE, "/product").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
-                // Image
-                .requestMatchers(HttpMethod.PUT, "/image/upload").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
-                // User
-                .requestMatchers("/user", "/user/*").authenticated()
                 // ===
+                .requestMatchers(HttpMethod.PUT, "/image/upload").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                .requestMatchers("/user", "/user/*").authenticated()
+                .requestMatchers("/order/all").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
+                .requestMatchers(HttpMethod.PUT, "/newsletter").hasAuthority(UserEntity.UserRole.BUSINESS.getAuthority())
                 .anyRequest().permitAll()
             ).formLogin((form) -> form
                 .loginPage("/auth/signin")

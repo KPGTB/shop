@@ -4,11 +4,15 @@ import ReactDOM from "react-dom/client"
 import {createBrowserRouter, RouterProvider} from "react-router-dom"
 
 import AccountPageLayout from "./components/layout/AccountPageLayout/AccountPageLayout"
+import {
+	allOrdersLoader,
+	ownOrdersLoader,
+} from "./pages/[account]/Orders/OrdersLoader"
+import OrdersPage from "./pages/[account]/Orders/OrdersPage"
 import BusinessDashboardPage from "./pages/[business]/Dashboard/DashboardPage"
 import businessProductsLoader from "./pages/[business]/Products/ProductsLoader"
 import BusinessProductsPage from "./pages/[business]/Products/ProductsPage"
 import CustomerDashboardPage from "./pages/[customer]/Dashboard/DashboardPage"
-import ActivationPage from "./pages/Activate/ActivationPage"
 import cartLoader from "./pages/Cart/CartLoader"
 import CartPage from "./pages/Cart/CartPage"
 import categoryLoader from "./pages/Category/CategoryLoader"
@@ -21,6 +25,7 @@ import Layout from "./pages/Layout"
 import PaymentPage from "./pages/Payment/PaymentPage"
 import SigninPage from "./pages/Signin/SigninPage"
 import SignupPage from "./pages/Signup/SignupPage"
+import VerificationPage from "./pages/Verification/VerificationPage"
 import AuthService, {
 	roleMiddleware,
 	unauthenticatedMiddleware,
@@ -50,9 +55,41 @@ const router = createBrowserRouter([
 				element: <SignupPage />,
 			},
 			{
-				path: "activate",
+				path: "signup/activate",
 				loader: () => unauthenticatedMiddleware(authService),
-				element: <ActivationPage />,
+				element: (
+					<VerificationPage
+						title="Activate account"
+						endpoint="/auth/activate"
+						method="POST"
+						buttonText="Activate"
+						successRedirect="/signin?activated"
+					/>
+				),
+			},
+			{
+				path: "newsletter/verify",
+				element: (
+					<VerificationPage
+						title="Subscribe newsletter"
+						endpoint="/newsletter/verify"
+						method="POST"
+						buttonText="Subscribe"
+						successRedirect="/"
+					/>
+				),
+			},
+			{
+				path: "newsletter/unsubscribe",
+				element: (
+					<VerificationPage
+						title="Unsubscribe newsletter"
+						endpoint="/newsletter"
+						method="DELETE"
+						buttonText="Unsubscribe"
+						successRedirect="/"
+					/>
+				),
 			},
 			{
 				path: "customer",
@@ -68,6 +105,11 @@ const router = createBrowserRouter([
 				loader: () => roleMiddleware(authService, "CUSTOMER"),
 				children: [
 					{path: "dashboard", element: <CustomerDashboardPage />},
+					{
+						path: "orders",
+						element: <OrdersPage />,
+						loader: ownOrdersLoader,
+					},
 				],
 			},
 			{
@@ -92,6 +134,11 @@ const router = createBrowserRouter([
 						path: "products",
 						element: <BusinessProductsPage />,
 						loader: businessProductsLoader,
+					},
+					{
+						path: "orders",
+						element: <OrdersPage />,
+						loader: allOrdersLoader,
 					},
 				],
 			},

@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,11 +64,14 @@ public class PaymentController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> pay(@RequestBody MultiValueMap<String,String> body, Authentication authentication) throws URISyntaxException, StripeException {
+    public ResponseEntity<Void> pay(@RequestBody MultiValueMap<String,String> body, @AuthenticationPrincipal User principal) throws URISyntaxException, StripeException {
         List<SessionCreateParams.LineItem> items = new ArrayList<>();
         List<SessionCreateParams.CustomField> customFields = new ArrayList<>();
         List<OrderProductEntity> opEntities = new ArrayList<>();
-        AtomicReference<Double> total = new AtomicReference<>(0.0);
+
+        AtomicReference<Double> subtotal = new AtomicReference<>(0.0);
+        AtomicReference<Double> estimatedTax = new AtomicReference<>(0.0);
+        AtomicReference<Double> estimatedTotal = new AtomicReference<>(0.0);
 
         // Collect products from body
         body.toSingleValueMap().forEach((pIdStr, quantityStr) -> {
@@ -87,7 +91,15 @@ public class PaymentController {
                                 .setPrice(product.getDefaultPrice())
                                 .build()
                 );
-                total.updateAndGet(v -> v + (entity.getPrice() * quantity));
+
+                double pSub = entity.getPrice() * quantity;
+                double pTax = pSub * (entity.getDisplayTax() / 100.0);
+                double pTotal = pSub + pTax;
+
+                subtotal.updateAndGet(v -> v + pSub);
+                estimatedTax.updateAndGet(v -> v + pTax);
+                estimatedTotal.updateAndGet(v -> v + pTotal);
+
             } catch (StripeException e) {
                 e.printStackTrace();
                 return;
@@ -100,18 +112,18 @@ public class PaymentController {
         if(items.isEmpty()) return ResponseEntity.status(303).location(new URI(FAIL_URL)).build();
 
         // Save basic data to database
-        UserEntity user = authentication != null ?
-                ((User)authentication.getPrincipal()).getEntity() : null;
+        UserEntity user = principal != null ? principal.getEntity() : null;
 
         OrderEntity orderEntity = OrderEntity.builder()
                 .user(user)
                 .products(opEntities)
                 .status(OrderEntity.OrderStatus.PAYING)
                 .orderDate(new Timestamp(Instant.now().toEpochMilli()))
-                .total(total.get())
-                .subtotal(total.get())
-                .tax(0.0)
+                .total(estimatedTotal.get())
+                .subtotal(subtotal.get())
+                .tax(estimatedTax.get())
                 .discount(0.0)
+                .currency(properties.getStripeCurrency())
                 .build();
         orderRepository.save(orderEntity);
 
@@ -191,8 +203,11 @@ public class PaymentController {
                 return new JsonResponse<>(HttpStatus.OK, "");
             case "checkout.session.async_payment_failed":
             case "checkout.session.expired":
-                orderEntity.setStatus(OrderEntity.OrderStatus.FAILED);
-                orderRepository.save(orderEntity);
+                if(orderEntity.getStatus() == OrderEntity.OrderStatus.PAYING) {
+                    orderEntity.setStatus(OrderEntity.OrderStatus.FAILED);
+                    orderRepository.save(orderEntity);
+                }
+
                 break;
         }
 
@@ -223,6 +238,7 @@ public class PaymentController {
         orderEntity.setSubtotal(session.getAmountSubtotal() / 100.0);
         orderEntity.setTax(totalDetails.getAmountTax() != null ? totalDetails.getAmountTax() / 100.0 : 0.0);
         orderEntity.setDiscount(totalDetails.getAmountDiscount() != null ? totalDetails.getAmountDiscount() / 100.0 : 0.0);
+        orderEntity.setCurrency(orderEntity.getCurrency());
 
         // Read custom fields
         Map<Integer, List<OrderFieldEntity>> fieldsData = new HashMap<>();
@@ -276,26 +292,26 @@ public class PaymentController {
         orderRepository.save(orderEntity);
     }
 
-    @GetMapping("/document")
-    private ResponseEntity<Resource> document(@RequestParam(name = "type") String type, @RequestParam(name = "number") String number, Authentication authentication) throws IOException {
+    @GetMapping("/document/{type}/{invoiceId}")
+    public ResponseEntity<Resource> document(@PathVariable String type, @PathVariable String invoiceId, @AuthenticationPrincipal User principal) throws IOException {
         if(!Arrays.asList("invoice", "receipt").contains(type)) return ResponseEntity.status(400).build();
 
         // Check if invoice exists
-        OrderEntity entity = orderRepository.findByInvoiceNumber(number).orElse(null);
+        OrderEntity entity = orderRepository.findByInvoiceNumber(invoiceId).orElse(null);
         if(entity == null) return ResponseEntity.status(404).build();
 
         // Check permissions
         if(entity.getUser() != null) {
-            if(authentication == null) return ResponseEntity.status(403).build();
-            UserEntity user = ((User)authentication.getPrincipal()).getEntity();
-            if(user.getId() != entity.getUser().getId()) return ResponseEntity.status(403).build();
+            if(principal == null) return ResponseEntity.status(403).build();
+            UserEntity user = principal.getEntity();
+            if(user.getId() != entity.getUser().getId() && user.getRole() != UserEntity.UserRole.BUSINESS) return ResponseEntity.status(403).build();
         }
 
         // Download invoice/receipt
-        byte[] bytes = s3Service.getFile(type+"_"+number+".pdf", properties.getS3PrivateBucket());
+        byte[] bytes = s3Service.getFile(type+"_"+invoiceId+".pdf", properties.getS3PrivateBucket());
         ByteArrayResource resource = new ByteArrayResource(bytes);
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+type+"_"+number+".pdf");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+type+"_"+invoiceId+".pdf");
 
         return ResponseEntity.ok()
                 .headers(headers)

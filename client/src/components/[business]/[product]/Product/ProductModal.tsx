@@ -29,10 +29,10 @@ const ProductModal = ({
 	hide: () => void
 	category: number
 	taxes: TaxCode[]
-	data?: Product
+	data?: ProductDto
 }) => {
 	const [image, setImage] = useState<string>("")
-	const [fields, setFields] = useState<Field[]>([])
+	const [fields, setFields] = useState<ProductFieldDto[]>([])
 
 	useEffect(() => {
 		setImage(data !== undefined ? data.image : "")
@@ -216,6 +216,7 @@ const ProductModal = ({
 									label: "",
 									type: "TEXT",
 									optional: false,
+									optionsId: [],
 									options: [],
 									tId: new Date().getTime(),
 								})
@@ -242,10 +243,10 @@ const FieldComp = ({
 	fields,
 	setFields,
 }: {
-	field: Field
+	field: ProductFieldDto
 	idx: number
-	fields: Field[]
-	setFields: (fields: Field[]) => void
+	fields: ProductFieldDto[]
+	setFields: (fields: ProductFieldDto[]) => void
 }) => {
 	return (
 		<section
@@ -359,11 +360,11 @@ const OptionComp = ({
 	option,
 	idx2,
 }: {
-	field: Field
+	field: ProductFieldDto
 	idx: number
-	fields: Field[]
-	setFields: (fields: Field[]) => void
-	option: DropdownOption
+	fields: ProductFieldDto[]
+	setFields: (fields: ProductFieldDto[]) => void
+	option: ProductFieldOptionDto
 	idx2: number
 }) => {
 	return (

@@ -22,9 +22,15 @@ public class CategoryController {
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private ProductRepository productRepository;
 
+    @GetMapping("/list/base")
+    public JsonResponse<List<CategoryDto>> base() {
+        List<CategoryDto> result = new ArrayList<>();
+        categoryRepository.findAll().forEach(entity -> result.add(new CategoryDto(entity)));
+        return new JsonResponse<>(HttpStatus.OK, "List of categories", result);
+    }
 
-    @GetMapping("/list")
-    public JsonResponse<List<CategoryDto>> list() {
+    @GetMapping("/list/expanded")
+    public JsonResponse<List<CategoryDto>> expanded() {
         List<CategoryDto> result = new ArrayList<>();
 
         categoryRepository.findAll().forEach(entity -> {
@@ -34,9 +40,9 @@ public class CategoryController {
         return new JsonResponse<>(HttpStatus.OK, "List of categories", result);
     }
 
-    @GetMapping
-    public JsonResponse<CategoryDto> info(@RequestParam(name = "id") int id) {
-        Optional<CategoryEntity> result = categoryRepository.findById(id);
+    @GetMapping("/{categoryId}")
+    public JsonResponse<CategoryDto> info(@PathVariable int categoryId) {
+        Optional<CategoryEntity> result = categoryRepository.findById(categoryId);
 
         return result
                 .map(category -> new JsonResponse<>(HttpStatus.OK, "Category info", new CategoryDto(
@@ -45,15 +51,25 @@ public class CategoryController {
                 .orElseGet(() -> new JsonResponse<>(HttpStatus.NOT_FOUND, "Category not found"));
     }
 
-    @PutMapping // TODO: Entity -> DTO
-    public JsonResponse<Boolean> create(@RequestBody CategoryEntity data) {
-        categoryRepository.save(data);
+    @PutMapping
+    public JsonResponse<Boolean> create(@RequestBody CategoryDto data) {
+        categoryRepository.save(new CategoryEntity(
+                data.getName(),
+                data.getDescription(),
+                data.getNameInUrl(),
+                new ArrayList<>()
+        ));
         return new JsonResponse<>(HttpStatus.CREATED, "Created");
     }
 
-    @PostMapping // TODO: Entity -> DTO
-    public JsonResponse<Boolean> edit(@RequestBody CategoryEntity data) {
-        categoryRepository.save(data);
+    @PostMapping
+    public JsonResponse<Boolean> edit(@RequestBody CategoryDto data) {
+        CategoryEntity entity = this.categoryRepository.findById(data.getId()).orElse(null);
+        if(entity == null) return new JsonResponse<>(HttpStatus.NOT_FOUND, "Category not found");
+        entity.setName(data.getName());
+        entity.setDescription(data.getDescription());
+        entity.setNameInUrl(data.getNameInUrl());
+        this.categoryRepository.save(entity);
         return new JsonResponse<>(HttpStatus.OK, "Updated");
     }
 

@@ -1,0 +1,88 @@
+.container {
+	width: 80%;
+	margin: 4rem auto;
+	min-height: 75vh;
+
+	& > h1 {
+		width: fit-content;
+		padding: 0.5rem;
+		padding-right: 3rem;
+		display: inline-block;
+		background-color: var(--accent);
+		color: var(--text-inverted);
+		margin: 0;
+	}
+
+	display: flex;
+	flex-direction: column;
+}
+
+.orders {
+	flex: 1;
+	border-left: solid 0.5rem var(--accent);
+	width: 100%;
+
+	padding: 2rem;
+}
+
+.order {
+	width: 100%;
+	border: solid 3px var(--bg-accent);
+
+	margin-bottom: 1rem;
+	padding: 1rem;
+	border-radius: 1rem;
+
+	display: grid;
+	grid-template-columns: 8rem 1fr 2fr 1fr;
+	grid-template-rows: 1fr;
+	align-items: center;
+	gap: 1rem;
+
+	font-weight: normal;
+	text-align: left;
+}
+
+.products {
+	opacity: 0.5;
+}
+
+.extra {
+	td:first-child {
+		padding-right: 1rem;
+		font-weight: bold;
+	}
+
+	td:nth-child(2) {
+		font-style: italic;
+		opacity: 0.75;
+	}
+}
+
+.images {
+	width: 6rem;
+	height: 100%;
+	padding-inline: 1rem;
+}
+
+.status {
+	display: block;
+	width: fit-content;
+	border-radius: 0.25rem;
+	padding: 0.15rem 0.5rem;
+	font-weight: bold;
+	font-style: italic;
+	opacity: 0.5;
+}
+.PAYING {
+	background-color: gray;
+}
+.PAID {
+	background-color: yellow;
+}
+.FAILED {
+	background-color: red;
+}
+.COMPLETED {
+	background-color: greenyellow;
+}

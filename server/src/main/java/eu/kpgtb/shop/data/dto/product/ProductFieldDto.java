@@ -1,5 +1,6 @@
 package eu.kpgtb.shop.data.dto.product;
 
+import com.stripe.param.checkout.SessionCreateParams;
 import eu.kpgtb.shop.data.entity.product.ProductFieldEntity;
 import eu.kpgtb.shop.data.entity.product.ProductFieldOptionEntity;
 import lombok.Getter;
@@ -12,7 +13,7 @@ public class ProductFieldDto  {
     private final int id;
     private final String label;
     private final boolean optional;
-    private final String type;
+    private final SessionCreateParams.CustomField.Type type;
 
     private final List<Integer> optionsId;
     private final List<ProductFieldOptionDto> options;
@@ -24,7 +25,7 @@ public class ProductFieldDto  {
         this.id = entity.getId();
         this.label = entity.getLabel();
         this.optional = entity.isOptional();
-        this.type = entity.getType().name();
+        this.type = entity.getType();
 
         this.optionsId = entity.getOptions().stream().map(ProductFieldOptionEntity::getId).toList();
         this.options = expands.contains(path+"options") ?

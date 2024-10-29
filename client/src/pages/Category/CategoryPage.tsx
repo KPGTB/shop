@@ -4,7 +4,7 @@ import {toPrice} from "../../util/PriceUtil"
 import styles from "./CategoryPage.module.scss"
 
 const CategoryPage = () => {
-	const category = useLoaderData() as FullCategory
+	const category = useLoaderData() as CategoryDto
 
 	return (
 		<section className={styles.container}>
@@ -20,7 +20,7 @@ const CategoryPage = () => {
 	)
 }
 
-const ProductComp = ({product}: {product: Product}) => {
+const ProductComp = ({product}: {product: ProductDto}) => {
 	return (
 		<Link
 			to={`${product.nameInUrl}.${product.id}`}

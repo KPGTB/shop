@@ -28,7 +28,12 @@ public class EmailData {
         if(this.template == null) return null;
 
         EmailTemplateEntity entity = emailTemplateRepository.findByType(this.template);
-        return entity != null ? entity.getSubject() : null;
+        String result =entity != null ? entity.getSubject() : "";
+
+        for (Map.Entry<String, String> entry : this.placeholders.entrySet()) {
+            result = result.replace("{{" + entry.getKey() + "}}", entry.getValue());
+        }
+        return result;
     }
 
     @SneakyThrows

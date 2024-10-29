@@ -1,8 +1,12 @@
+import {useContext} from "react"
 import {IconType} from "react-icons"
 import {FaDiscord, FaInstagram, FaXTwitter} from "react-icons/fa6"
 import {MdEmail} from "react-icons/md"
 import {Link} from "react-router-dom"
 
+import ThemeContext from "../../../context/ThemeContext"
+import {errorIf, successIf} from "../../../util/ToastUtl"
+import JsonForm from "../../Form/JsonForm"
 import styles from "./Footer.module.scss"
 
 const year = new Date().getFullYear()
@@ -25,6 +29,7 @@ const media: {url: string; text: string; icon: IconType}[] = [
 ]
 
 const Footer = () => {
+	const theme = useContext<Theme>(ThemeContext)
 	return (
 		<footer className={styles.footer}>
 			<section className={styles.info}>
@@ -59,7 +64,17 @@ const Footer = () => {
 			</section>
 			<section className={styles.follow}>
 				<h3>Newsletter</h3>
-				<form>
+				<JsonForm
+					method="POST"
+					action="/newsletter"
+					reload={false}
+					after={(res) =>
+						res.json().then((json) => {
+							successIf(json.status === 200, json.message, theme)
+							errorIf(json.status !== 200, json.message, theme)
+						})
+					}
+				>
 					<input
 						type="email"
 						name="email"
@@ -69,7 +84,7 @@ const Footer = () => {
 					<button>
 						<MdEmail />
 					</button>
-				</form>
+				</JsonForm>
 				<h3>Follow us on</h3>
 				<section className={styles.media}>
 					{media.map((info) => (

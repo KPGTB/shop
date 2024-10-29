@@ -4,7 +4,6 @@ import {FaDiscord, FaHeart, FaStar, FaUser} from "react-icons/fa"
 import {FaCartShopping} from "react-icons/fa6"
 
 import ThemeContext from "../../context/ThemeContext"
-import {Theme} from "../Layout"
 import styles from "./LandingPage.module.scss"
 
 const features: {

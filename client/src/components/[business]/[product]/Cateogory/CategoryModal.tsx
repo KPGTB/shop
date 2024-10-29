@@ -18,7 +18,7 @@ const CategoryModal = ({
 }: {
 	visible: boolean
 	hide: () => void
-	data?: Category
+	data?: CategoryDto
 }) => {
 	return (
 		<Modal visible={visible}>

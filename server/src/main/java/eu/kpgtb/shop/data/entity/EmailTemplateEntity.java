@@ -18,6 +18,6 @@ public class EmailTemplateEntity extends BaseEntity{
     String content;
 
     public enum CommonTemplateType {
-        ACCOUNT_ACTIVATION,FORGOT_PASSWORD
+        ACCOUNT_ACTIVATION,FORGOT_PASSWORD,NEWSLETTER_SUBSCRIBE,NEWSLETTER
     }
 }

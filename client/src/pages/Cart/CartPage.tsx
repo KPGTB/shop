@@ -8,7 +8,7 @@ import styles from "./CartPage.module.scss"
 
 const CartPage = () => {
 	const [cartItems, setCartItems] = useCart()
-	const products = useLoaderData() as Map<number, Product>
+	const products = useLoaderData() as Map<number, ProductDto>
 
 	const totalPrice = useMemo(() => {
 		let price = 0

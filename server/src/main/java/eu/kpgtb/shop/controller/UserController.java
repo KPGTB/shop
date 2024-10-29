@@ -3,10 +3,6 @@ package eu.kpgtb.shop.controller;
 import eu.kpgtb.shop.auth.User;
 import eu.kpgtb.shop.data.dto.UserDto;
 import eu.kpgtb.shop.data.dto.order.OrderDto;
-import eu.kpgtb.shop.data.dto.order.OrderProductDto;
-import eu.kpgtb.shop.data.dto.product.ProductDto;
-import eu.kpgtb.shop.data.entity.order.OrderEntity;
-import eu.kpgtb.shop.data.repository.UserRepository;
 import eu.kpgtb.shop.data.repository.order.OrderRepository;
 import eu.kpgtb.shop.util.JsonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,7 +35,8 @@ public class UserController {
                         "products",
                         "products.product",
                         "products.fields",
-                        "products.fields.field"
+                        "products.fields.field",
+                        "user"
                 ),""
                 )).toList()
         );

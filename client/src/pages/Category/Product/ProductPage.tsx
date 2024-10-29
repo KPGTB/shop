@@ -1,18 +1,20 @@
-import {useCallback, useContext, useState} from "react"
+import {useCallback, useContext, useMemo, useState} from "react"
 import {FaCartPlus} from "react-icons/fa6"
 import {Link, useLoaderData} from "react-router-dom"
-import {Bounce, toast} from "react-toastify"
 
 import {useCart} from "../../../context/CartContext"
 import ThemeContext from "../../../context/ThemeContext"
 import {toPrice} from "../../../util/PriceUtil"
+import {success} from "../../../util/ToastUtl"
 import styles from "./ProductPage.module.scss"
 
 const ProductPage = () => {
 	const [cartItems, setCartItems] = useCart()
-	const [product, category] = useLoaderData() as [Product, FullCategory]
 	const [quantity, setQuantity] = useState<number>(1)
 	const theme = useContext<Theme>(ThemeContext)
+
+	const product = useLoaderData() as ProductDto
+	const category = useMemo(() => product.category!, [product])
 
 	const addToCart = useCallback(() => {
 		let foundInCart = false
@@ -31,17 +33,7 @@ const ProductPage = () => {
 		}
 		setCartItems([...cartItems])
 
-		toast.success(`Added ${product.name} to cart!`, {
-			position: "bottom-right",
-			autoClose: 5000,
-			hideProgressBar: false,
-			closeOnClick: false,
-			pauseOnHover: true,
-			draggable: false,
-			progress: undefined,
-			theme: theme,
-			transition: Bounce,
-		})
+		success(`Added ${product.name} to cart!`, theme)
 	}, [quantity, cartItems])
 
 	return (

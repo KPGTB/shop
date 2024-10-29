@@ -14,7 +14,7 @@ const Header = ({setTheme}: {setTheme: (newTheme: Theme) => void}) => {
 	const theme = useContext<Theme>(ThemeContext)
 	const [logged, user] = useAuth()
 	const [cartItems] = useCart()
-	const [categories, setCategories] = useState<Category[] | undefined>([])
+	const [categories, setCategories] = useState<CategoryDto[] | undefined>([])
 
 	useEffect(() => {
 		headerLoader()

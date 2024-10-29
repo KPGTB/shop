@@ -1,7 +1,7 @@
 import {redirect} from "react-router-dom"
 
 class AuthService {
-	user: User | undefined
+	user?: UserDto
 
 	fetchUser = async () => {
 		try {

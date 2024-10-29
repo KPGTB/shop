@@ -7,7 +7,12 @@ const AccountPageLayout = ({links}: {links: LayoutLink[]}) => {
 		<section className={styles.container}>
 			<nav className={styles.nav}>
 				{links.map((link) => (
-					<Link to={link.to}>{link.label}</Link>
+					<Link
+						to={link.to}
+						key={link.label}
+					>
+						{link.label}
+					</Link>
 				))}
 
 				<a href={`${API_URL}/auth/signout`}>Sign Out</a>

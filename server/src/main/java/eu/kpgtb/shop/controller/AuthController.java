@@ -12,6 +12,7 @@ import eu.kpgtb.shop.util.JsonResponse;
 import lombok.SneakyThrows;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -67,35 +68,35 @@ public class AuthController {
         emailService.sendEmail(EmailData.builder()
                 .template(EmailTemplateEntity.CommonTemplateType.ACCOUNT_ACTIVATION.name())
                 .to(email)
-                .placeholder("url", properties.getFrontendUrl() + "/activate?token="+token)
+                .placeholder("url", properties.getFrontendUrl() + "/signup/activatetoken="+token)
                 .emailTemplateRepository(this.emailTemplateRepository)
                 .build());
     }
 
     @PostMapping("/activate")
     @SneakyThrows
-    public Object verify(VerifyBody body) {
+    public JsonResponse<Boolean> verify(@RequestBody  VerifyBody body) {
         if(!captchaService.verify(body.captcha)) {
-            return new JsonResponse<>(properties.getFrontendUrl() + "/activate?captcha");
+            return new JsonResponse<>(HttpStatus.BAD_REQUEST, "Captcha failed");
         }
 
         if(body.token.isEmpty()) {
-            return new JsonResponse<>(properties.getFrontendUrl() + "/activate?error");
+            return new JsonResponse<>(HttpStatus.BAD_REQUEST, "Token invalid");
         }
 
         UserEntity entity = this.userRepository.findByVerificationToken(body.token);
         if(entity == null) {
-            return new JsonResponse<>(properties.getFrontendUrl() + "/activate?error");
+            return new JsonResponse<>(HttpStatus.BAD_REQUEST, "Token invalid");
         }
 
         entity.setActive(true);
         entity.setVerificationToken(null);
         this.userRepository.save(entity);
 
-        return new JsonResponse<>(properties.getFrontendUrl() + "/signin?activated");
+        return new JsonResponse<>(HttpStatus.OK, "Account activated");
     }
 
 
-    record SignupBody(String email, String password, String password2, String captcha) {}
-    record VerifyBody(String token, String captcha) {}
+    public record SignupBody(String email, String password, String password2, String captcha) {}
+    public record VerifyBody(String token, String captcha) {}
 }

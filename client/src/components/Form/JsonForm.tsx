@@ -23,6 +23,7 @@ const JsonForm = ({
 	return (
 		<form
 			ref={ref}
+			className={delegated.className}
 			onSubmit={(event) => {
 				event.preventDefault()
 

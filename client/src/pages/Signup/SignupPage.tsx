@@ -3,9 +3,9 @@ import ReCAPTCHA from "react-google-recaptcha"
 import {MdEmail} from "react-icons/md"
 import {RiLockPasswordFill} from "react-icons/ri"
 import {Link, useSearchParams} from "react-router-dom"
-import {Bounce, toast} from "react-toastify"
 
 import ThemeContext from "../../context/ThemeContext"
+import {errorIf, successIf} from "../../util/ToastUtl"
 import styles from "./SignupPage.module.scss"
 
 const SignupPage = () => {
@@ -16,61 +16,14 @@ const SignupPage = () => {
 	const [captcha, setCaptcha] = useState<string>("")
 
 	useEffect(() => {
-		if (params.has("error")) {
-			toast.error("Something went wrong!", {
-				position: "bottom-right",
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: false,
-				pauseOnHover: true,
-				draggable: false,
-				progress: undefined,
-				theme: theme,
-				transition: Bounce,
-			})
-		}
-
-		if (params.has("exists")) {
-			toast.error("Account already exists!", {
-				position: "bottom-right",
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: false,
-				pauseOnHover: true,
-				draggable: false,
-				progress: undefined,
-				theme: theme,
-				transition: Bounce,
-			})
-		}
-
-		if (params.has("captcha")) {
-			toast.error("Captcha failed!", {
-				position: "bottom-right",
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: false,
-				pauseOnHover: true,
-				draggable: false,
-				progress: undefined,
-				theme: theme,
-				transition: Bounce,
-			})
-		}
-
-		if (params.has("created")) {
-			toast.success("Account created! Please check your e-mail", {
-				position: "bottom-right",
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: false,
-				pauseOnHover: true,
-				draggable: false,
-				progress: undefined,
-				theme: theme,
-				transition: Bounce,
-			})
-		}
+		errorIf(params.has("error"), "Something went wrong!", theme)
+		errorIf(params.has("exists"), "Account already exists!", theme)
+		errorIf(params.has("captcha"), "Captcha failed!", theme)
+		successIf(
+			params.has("created"),
+			"Account created! Please check your e-mail",
+			theme
+		)
 	}, [])
 
 	return (

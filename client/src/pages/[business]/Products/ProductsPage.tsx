@@ -7,11 +7,11 @@ import CategoryComp, {
 import CategoryModal from "../../../components/[business]/[product]/Cateogory/CategoryModal"
 
 const BusinessProductsPage = () => {
-	const [categories, taxes] = useLoaderData() as [FullCategory[], TaxCode[]]
+	const [categories, taxes] = useLoaderData() as [CategoryDto[], TaxCode[]]
 
 	const [categoryModalState, setCategoryModal] = useState<{
 		visible: boolean
-		data?: Category
+		data?: CategoryDto
 	}>({visible: false, data: undefined})
 
 	return (

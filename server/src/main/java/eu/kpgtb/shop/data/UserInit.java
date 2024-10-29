@@ -8,16 +8,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-
 @Component
 public class UserInit implements CommandLineRunner {
-    @Autowired
-    private Properties properties;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired private Properties properties;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {

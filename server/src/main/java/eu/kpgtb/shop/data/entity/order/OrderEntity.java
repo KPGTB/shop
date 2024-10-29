@@ -44,6 +44,7 @@ public class OrderEntity extends BaseEntity {
     double subtotal;
     double tax;
     double discount;
+    String currency;
 
     Timestamp orderDate;
     Timestamp paymentDate;

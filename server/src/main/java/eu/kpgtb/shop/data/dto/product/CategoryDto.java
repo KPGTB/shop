@@ -3,13 +3,14 @@ package eu.kpgtb.shop.data.dto.product;
 import eu.kpgtb.shop.data.entity.product.CategoryEntity;
 import eu.kpgtb.shop.data.entity.product.ProductEntity;
 import lombok.Getter;
+import org.springframework.lang.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 public class CategoryDto  {
-    private final int id;
+    @Nullable private final Integer id;
     private final String name;
     private final String description;
     private final String nameInUrl;

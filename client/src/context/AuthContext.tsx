@@ -6,18 +6,21 @@ const AuthContext = createContext<Auth>([
 	false,
 	undefined,
 	undefined,
-	(newUser: User | undefined, newService: AuthService) => {},
+	(newUser: UserDto | undefined, newService: AuthService) => {},
 ])
 
 const AuthProvider = ({
 	authService,
 	user,
 	children,
-}: {authService: AuthService; user: User | undefined} & PropsWithChildren) => {
-	const [userState, setUser] = useState<User | undefined>(user)
+}: {
+	authService: AuthService
+	user: UserDto | undefined
+} & PropsWithChildren) => {
+	const [userState, setUser] = useState<UserDto | undefined>(user)
 	const [serviceState, setService] = useState<AuthService>(authService)
 
-	const update = (newUser: User | undefined, newService: AuthService) => {
+	const update = (newUser: UserDto | undefined, newService: AuthService) => {
 		setUser(newUser)
 		setService(newService)
 	}

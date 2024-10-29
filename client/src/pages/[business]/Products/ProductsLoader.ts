@@ -1,5 +1,5 @@
 const businessProductsLoader = async () => {
-	const categoriesRes = await fetch(`${API_URL}/category/list`)
+	const categoriesRes = await fetch(`${API_URL}/category/list/expanded`)
 	if (categoriesRes.status !== 200) return []
 	const categoriesJson = await categoriesRes.json()
 
@@ -16,7 +16,7 @@ const businessProductsLoader = async () => {
 		page++
 	}
 
-	return [categoriesJson.data as FullCategory[], taxes]
+	return [categoriesJson.data as CategoryDto[], taxes]
 }
 
 export default businessProductsLoader

@@ -27,5 +27,21 @@ public class TemplateInit implements CommandLineRunner {
                     "<h1>Forgot password?</h1><p>Please click link below to change it<br><a href='{{url}}'>{{url}}</a></p>"
             ));
         }
+
+        if(!emailTemplateRepository.existsByType(EmailTemplateEntity.CommonTemplateType.NEWSLETTER.name())) {
+            emailTemplateRepository.save(new EmailTemplateEntity(
+                    EmailTemplateEntity.CommonTemplateType.NEWSLETTER.name(),
+                    "Newsletter: {{subject}}",
+                    "<p>{{content}}</p><a href='{{unsubscribe}}'>Unsubscribe newsletter</a>"
+            ));
+        }
+
+        if(!emailTemplateRepository.existsByType(EmailTemplateEntity.CommonTemplateType.NEWSLETTER_SUBSCRIBE.name())) {
+            emailTemplateRepository.save(new EmailTemplateEntity(
+                    EmailTemplateEntity.CommonTemplateType.NEWSLETTER_SUBSCRIBE.name(),
+                    "Subscribe to newsletter",
+                    "<a href='{{subscribe}}'>Click to subscribe newsletter</a>"
+            ));
+        }
     }
 }

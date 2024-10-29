@@ -1,5 +1,6 @@
 package eu.kpgtb.shop.data.dto;
 
+import eu.kpgtb.shop.data.entity.NewsletterEntity;
 import eu.kpgtb.shop.data.entity.UserEntity;
 import lombok.Getter;
 
@@ -7,19 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class UserDto  {
+public class NewsletterDto {
     private final int id;
     private final String email;
+    private final String token;
     private final boolean active;
-    private final UserEntity.UserRole role;
 
-    public UserDto(UserEntity entity) {
+    public NewsletterDto(NewsletterEntity entity) {
         this(entity, new ArrayList<>(),"");
     }
-    public UserDto(UserEntity entity, List<String> expands, String path) {
+    public NewsletterDto(NewsletterEntity entity, List<String> expands, String path) {
         this.id = entity.getId();
         this.email = entity.getEmail();
+        this.token = entity.getToken();
         this.active = entity.isActive();
-        this.role = entity.getRole();
     }
 }

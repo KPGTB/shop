@@ -10,13 +10,13 @@ const CategoryComp = ({
 	taxes,
 	edit,
 }: {
-	category: FullCategory
+	category: CategoryDto
 	taxes: TaxCode[]
 	edit: () => void
 }) => {
 	const [productModalState, setProductModal] = useState<{
 		visible: boolean
-		data?: Product
+		data?: ProductDto
 		category: number
 	}>({visible: false, category: 0})
 

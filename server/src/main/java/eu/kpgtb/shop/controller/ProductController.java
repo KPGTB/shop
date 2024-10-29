@@ -33,8 +33,9 @@ public class ProductController {
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private ProductFieldRepository productFieldRepository;
     @Autowired private ProductDropdownOptionRepository productDropdownOptionRepository;
-    private Properties properties;
-    private List<TaxCode> taxes;
+
+    private final Properties properties;
+    private final List<TaxCode> taxes;
 
     public ProductController(Properties properties) {
         taxes = new ArrayList<>();
@@ -58,17 +59,6 @@ public class ProductController {
         TaxCode.list(params).autoPagingIterable().forEach(taxes::add);
     }
 
-    @GetMapping
-    public JsonResponse<ProductDto> info(@RequestParam(value = "id") int id) {
-        Optional<ProductEntity> result = productRepository.findById(id);
-
-        return result
-                .map(product -> new JsonResponse<>(HttpStatus.OK, "Product info", new ProductDto(
-                        product, Arrays.asList("fields", "fields.options", "category"),""
-                )))
-                .orElseGet(() -> new JsonResponse<>(HttpStatus.NOT_FOUND, "Product not found"));
-    }
-
     @GetMapping("/taxes")
     public JsonResponse<TaxData> taxes(@RequestParam(name = "page", defaultValue = "1", required = false) int page) {
         int from = (page-1) * 100;
@@ -84,6 +74,17 @@ public class ProductController {
                 hasMore,
                 this.taxes.subList(from,to)
         ));
+    }
+
+    @GetMapping("/{productId}")
+    public JsonResponse<ProductDto> info(@PathVariable("productId") int id) {
+        Optional<ProductEntity> result = productRepository.findById(id);
+
+        return result
+                .map(product -> new JsonResponse<>(HttpStatus.OK, "Product info", new ProductDto(
+                        product, Arrays.asList("fields", "fields.options", "category"),""
+                )))
+                .orElseGet(() -> new JsonResponse<>(HttpStatus.NOT_FOUND, "Product not found"));
     }
 
     @PutMapping
@@ -222,6 +223,6 @@ public class ProductController {
         return new JsonResponse<>(HttpStatus.OK, "Updated");
     }
 
-    record ProductBody(int id, String name, String description, String nameInUrl, String image, double price,String taxCode, double displayTax,int categoryId, List<ProductFieldEntity> fields) {}
-    record TaxData(boolean hasMore, List<TaxCode> codes) {}
+    public record ProductBody(int id, String name, String description, String nameInUrl, String image, double price,String taxCode, double displayTax,int categoryId, List<ProductFieldEntity> fields) {}
+    public record TaxData(boolean hasMore, List<TaxCode> codes) {}
 }

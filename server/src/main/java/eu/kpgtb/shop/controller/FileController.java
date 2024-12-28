@@ -11,13 +11,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/image")
-public class ImageController {
+@RequestMapping("/file")
+public class FileController {
     @Autowired private IS3Service s3Service;
     @Autowired private Properties properties;
 
-    @PutMapping("/upload")
-    public JsonResponse<String> upload(@RequestParam("file") MultipartFile file) {
+    @PutMapping("/uploadImage")
+    public JsonResponse<String> uploadImage(@RequestParam("file") MultipartFile file) {
         String[] nameElements = file.getOriginalFilename().split("\\.");
         String ext = nameElements[nameElements.length-1];
         String newName = "upload_" + System.currentTimeMillis() + "." + ext;
@@ -29,5 +29,20 @@ public class ImageController {
             return new JsonResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "Upload failed");
         }
         return new JsonResponse<>(HttpStatus.OK, "Uploaded", this.properties.getS3PublicUrl() + "/" + newName);
+    }
+
+    @PutMapping("/uploadFile")
+    public JsonResponse<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        String[] nameElements = file.getOriginalFilename().split("\\.");
+        String ext = nameElements[nameElements.length-1];
+        String newName = "upload_" + System.currentTimeMillis() + "." + ext;
+
+        try {
+            s3Service.uploadFile(file.getBytes(), newName, this.properties.getS3PrivateBucket());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new JsonResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "Upload failed");
+        }
+        return new JsonResponse<>(HttpStatus.OK, "Uploaded", newName);
     }
 }

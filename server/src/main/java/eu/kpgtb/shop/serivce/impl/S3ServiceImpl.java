@@ -11,6 +11,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
@@ -69,5 +70,15 @@ public class S3ServiceImpl implements IS3Service {
                     .key(key)
                     .build()
         ).asByteArray();
+    }
+
+    @Override
+    public InputStream getFileAsIS(String key, String bucket) {
+        return this.client.getObjectAsBytes(
+                GetObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(key)
+                        .build()
+        ).asInputStream();
     }
 }

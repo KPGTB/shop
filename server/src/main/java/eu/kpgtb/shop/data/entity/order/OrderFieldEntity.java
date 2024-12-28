@@ -18,4 +18,5 @@ public class OrderFieldEntity extends BaseEntity {
     @JoinColumn(name = "field_id")
     ProductFieldEntity field;
     String value;
+    int place;
 }

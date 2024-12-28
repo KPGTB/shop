@@ -8,6 +8,7 @@ import lombok.Singular;
 import lombok.SneakyThrows;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.*;
 
 @Getter @Builder
@@ -16,6 +17,7 @@ public class EmailData {
     private boolean useBcc;
     private String subject;
     @Singular  private List<File> attachments;
+    @Singular  private Map<String, InputStream> isAttachments;
 
     private String html;
 

@@ -32,4 +32,7 @@ public class ProductEntity extends BaseEntity {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id")
     List<ProductFieldEntity> fields;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name="product_id")
+    List<ProductActionEntity> actions;
 }

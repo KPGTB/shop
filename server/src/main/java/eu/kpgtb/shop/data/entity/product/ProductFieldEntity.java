@@ -23,14 +23,14 @@ public class ProductFieldEntity extends BaseEntity {
     @JoinColumn(name = "field_id")
     List<ProductFieldOptionEntity> options;
 
-    public SessionCreateParams.CustomField getStripeObject(int pId, String productName) {
+    public SessionCreateParams.CustomField getStripeObject(int pId, String productName, int place) {
         return SessionCreateParams.CustomField.builder()
                 .setType(this.type)
                 .setLabel(SessionCreateParams.CustomField.Label.builder()
                         .setType(SessionCreateParams.CustomField.Label.Type.CUSTOM)
-                        .setCustom(productName + " - " + this.label)
+                        .setCustom(productName + " ("+(place+1)+") - " + this.label)
                         .build())
-                .setKey(pId + "-" + this.getId())
+                .setKey(pId + "-" + this.getId() + "-" + place)
                 .setOptional(this.optional)
                 .setDropdown(
                         this.type != SessionCreateParams.CustomField.Type.DROPDOWN ?

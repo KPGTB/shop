@@ -33,4 +33,6 @@ public class Properties {
     private String s3PublicUrl = "";
 
     private String captchaSecret = "";
+
+    private String aesSecretKey = "";
 }

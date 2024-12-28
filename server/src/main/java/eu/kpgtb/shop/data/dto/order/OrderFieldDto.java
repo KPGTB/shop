@@ -12,6 +12,7 @@ public class OrderFieldDto  {
     private final int id;
     private final int fieldId;
     private final ProductFieldDto field;
+    private final int place;
     private final String value;
 
     public OrderFieldDto(OrderFieldEntity entity) {
@@ -20,6 +21,7 @@ public class OrderFieldDto  {
     public OrderFieldDto(OrderFieldEntity entity, List<String> expands, String path) {
         this.id = entity.getId();
         this.value = entity.getValue();
+        this.place = entity.getPlace();
 
         this.fieldId = entity.getField().getId();
         this.field = expands.contains(path + "field") ? new ProductFieldDto(entity.getField(),expands, path+"field.") : null;

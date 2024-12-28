@@ -1,5 +1,6 @@
 package eu.kpgtb.shop.data.dto.product;
 
+import eu.kpgtb.shop.data.entity.product.ProductActionEntity;
 import eu.kpgtb.shop.data.entity.product.ProductEntity;
 import eu.kpgtb.shop.data.entity.product.ProductFieldEntity;
 import lombok.Getter;
@@ -29,6 +30,9 @@ public class ProductDto  {
     private final List<Integer> fieldsId;
     private final List<ProductFieldDto> fields;
 
+    private final List<Integer> actionsId;
+    private final List<ProductActionDto> actions;
+
     public ProductDto(ProductEntity entity) {
         this(entity, new ArrayList<>(),"");
     }
@@ -52,5 +56,9 @@ public class ProductDto  {
         this.fieldsId = entity.getFields().stream().map(ProductFieldEntity::getId).toList();
         this.fields = expands.contains(path+"fields") ?
                 entity.getFields().stream().map(field -> new ProductFieldDto(field,expands, path+"fields.")).toList() : new ArrayList<>();
+
+        this.actionsId = entity.getActions().stream().map(ProductActionEntity::getId).toList();
+        this.actions = expands.contains(path + "actions") ?
+                entity.getActions().stream().map(action -> new ProductActionDto(action,expands,path+"actions.")).toList() : new ArrayList<>();
     }
 }

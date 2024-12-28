@@ -40,7 +40,7 @@ public class NewsletterController {
         emailService.sendEmail(EmailData.builder()
                 .template(EmailTemplateEntity.CommonTemplateType.NEWSLETTER.name())
                 .to(email)
-                .placeholder("subscribe", properties.getFrontendUrl() + "/newsletter/unsubscribe?token="+token)
+                .placeholder("unsubscribe", properties.getFrontendUrl() + "/newsletter/unsubscribe?token="+token)
                 .placeholder("subject", subject)
                 .placeholder("content", content)
                 .emailTemplateRepository(this.emailTemplateRepository)

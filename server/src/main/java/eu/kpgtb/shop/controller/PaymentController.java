@@ -1,5 +1,8 @@
 package eu.kpgtb.shop.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
@@ -11,29 +14,26 @@ import eu.kpgtb.shop.config.Properties;
 import eu.kpgtb.shop.data.entity.order.OrderEntity;
 import eu.kpgtb.shop.data.entity.order.OrderProductEntity;
 import eu.kpgtb.shop.data.entity.order.OrderFieldEntity;
-import eu.kpgtb.shop.data.entity.product.ProductEntity;
+import eu.kpgtb.shop.data.entity.product.*;
 import eu.kpgtb.shop.data.entity.UserEntity;
-import eu.kpgtb.shop.data.entity.product.ProductFieldEntity;
 import eu.kpgtb.shop.data.repository.order.OrderProductFieldRepository;
 import eu.kpgtb.shop.data.repository.order.OrderProductRepository;
 import eu.kpgtb.shop.data.repository.order.OrderRepository;
-import eu.kpgtb.shop.data.repository.product.ProductFieldRepository;
-import eu.kpgtb.shop.data.repository.product.ProductRepository;
+import eu.kpgtb.shop.data.repository.product.*;
+import eu.kpgtb.shop.serivce.iface.IRconService;
 import eu.kpgtb.shop.serivce.iface.IS3Service;
+import eu.kpgtb.shop.util.AesUtil;
 import eu.kpgtb.shop.util.JsonResponse;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
@@ -51,6 +51,14 @@ public class PaymentController {
     @Autowired private OrderProductFieldRepository orderProductFieldRepository;
     @Autowired private ProductFieldRepository productFieldRepository;
     @Autowired private OrderRepository orderRepository;
+
+    @Autowired private RconRepository rconRepository;
+    @Autowired private ProductActionKeyRepository keyRepository;
+    @Autowired private ApiRepository apiRepository;
+    @Autowired private ProductSecretRepository productSecretRepository;
+
+    @Autowired private RestTemplate restTemplate;
+    @Autowired private IRconService rconService;
 
     @Autowired private IS3Service s3Service;
     private final Properties properties;
@@ -105,9 +113,11 @@ public class PaymentController {
                 return;
             }
 
-            customFields.addAll(entity.getFields()
-                    .stream()
-                    .map(field -> field.getStripeObject(pId, product.getName())).toList());
+            for (int i = 0; i <= quantity; i++) {
+                customFields.addAll(entity.getFields()
+                        .stream()
+                        .map(field -> field.getStripeObject(pId, product.getName(),quantity)).toList());
+            }
         });
         if(items.isEmpty()) return ResponseEntity.status(303).location(new URI(FAIL_URL)).build();
 
@@ -243,9 +253,10 @@ public class PaymentController {
         // Read custom fields
         Map<Integer, List<OrderFieldEntity>> fieldsData = new HashMap<>();
         session.getCustomFields().forEach(field -> {
-            String[] key = field.getKey().split("-",2);
+            String[] key = field.getKey().split("-",3);
             int pId = Integer.parseInt(key[0]);
             int fId = Integer.parseInt(key[1]);
+            int place = Integer.parseInt(key[2]);
 
             Optional<ProductEntity> productEntityOpt = productRepository.findById(pId);
             Optional<ProductFieldEntity> fieldEntityOpt = productFieldRepository.findById(fId);
@@ -260,7 +271,7 @@ public class PaymentController {
                 default -> value = null;
             }
 
-            OrderFieldEntity opf = new OrderFieldEntity(fieldEntityOpt.get(),value);
+            OrderFieldEntity opf = new OrderFieldEntity(fieldEntityOpt.get(),value,place);
             fieldsData.putIfAbsent(pId, new ArrayList<>());
             fieldsData.get(pId).add(opf);
         });
@@ -285,7 +296,79 @@ public class PaymentController {
 
     @Async
     private void completeOrder(OrderEntity orderEntity) {
-        // TODO: Execute actions
+        orderEntity.getProducts().forEach(product -> {
+            List<List<OrderFieldEntity>> fields = new ArrayList<>();
+            for (int i = 0; i < product.getQuantity(); i++) {
+                fields.add(new ArrayList<>());
+            }
+            product.getFields().forEach(field -> {
+                fields.get(field.getPlace()).add(field);
+            });
+
+            List<String> filesToDeliver = new ArrayList<>();
+            List<String> keysToDeliver = new ArrayList<>();
+
+            for (int i = 0; i < product.getQuantity(); i++) {
+                product.getProduct().getActions().forEach(action -> {
+                    switch (action.getType()) {
+                        case API -> {
+                            JsonObject json = new Gson().fromJson(action.getData(),JsonObject.class);
+
+                            int apiId = json.get("api_id").getAsInt();
+                            String method = json.get("method").getAsString();
+                            JsonElement content = json.get("content");
+
+                            ApiEntity api = apiRepository.findById(apiId).orElse(null);
+                            if(api != null) {
+
+                                String url = api.getUrl();
+                                if(method.equalsIgnoreCase("get")) {
+                                    url += "?" + content.getAsString();
+                                }
+
+                                HttpEntity<?> entity = new HttpEntity<>(content);
+                                entity.getHeaders().add("Content-Type", "application/json");
+                                if(api.getToken() != null && !api.getToken().isEmpty()) {
+                                    entity.getHeaders().setBearerAuth(api.getToken());
+                                }
+
+                                restTemplate.exchange(url, HttpMethod.valueOf(method.toUpperCase()), entity,String.class);
+                            }
+                        }
+                        case KEY -> {
+                            ProductActionKeyEntity key = keyRepository.findByType(action.getData());
+                            if(key != null) {
+                                keysToDeliver.add(key.getKey());
+                                keyRepository.delete(key);
+                            }
+                        }
+                        case FILE -> {
+                            filesToDeliver.add(action.getData());
+                        }
+                        case RCON -> {
+                            JsonObject json = new Gson().fromJson(action.getData(),JsonObject.class);
+
+                            int rconId = json.get("rcon_id").getAsInt();
+                            String command = json.get("command").getAsString();
+
+                            RconEntity rconEntity = rconRepository.findById(rconId).orElse(null);
+                            if(rconEntity != null) {
+                                try {
+                                    rconService.sendMessage(rconEntity.getHost(), AesUtil.decrypt(rconEntity.getPassword(), properties.getAesSecretKey()), command);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        // TODO:
+        // - Sending email
+        // - Secret variables
+        // - Custom fields variables
 
         orderEntity.setStatus(OrderEntity.OrderStatus.COMPLETED);
         orderEntity.setCompletionDate(new Timestamp(Instant.now().toEpochMilli()));

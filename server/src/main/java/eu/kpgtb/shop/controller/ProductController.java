@@ -7,14 +7,10 @@ import com.stripe.model.Product;
 import com.stripe.model.TaxCode;
 import com.stripe.param.*;
 import eu.kpgtb.shop.config.Properties;
-import eu.kpgtb.shop.data.dto.product.ProductDto;
-import eu.kpgtb.shop.data.entity.product.CategoryEntity;
-import eu.kpgtb.shop.data.entity.product.ProductEntity;
-import eu.kpgtb.shop.data.entity.product.ProductFieldEntity;
-import eu.kpgtb.shop.data.repository.product.CategoryRepository;
-import eu.kpgtb.shop.data.repository.product.ProductDropdownOptionRepository;
-import eu.kpgtb.shop.data.repository.product.ProductFieldRepository;
-import eu.kpgtb.shop.data.repository.product.ProductRepository;
+import eu.kpgtb.shop.data.dto.product.*;
+import eu.kpgtb.shop.data.entity.product.*;
+import eu.kpgtb.shop.data.repository.product.*;
+import eu.kpgtb.shop.util.AesUtil;
 import eu.kpgtb.shop.util.JsonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,6 +29,10 @@ public class ProductController {
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private ProductFieldRepository productFieldRepository;
     @Autowired private ProductDropdownOptionRepository productDropdownOptionRepository;
+    @Autowired private RconRepository rconRepository;
+    @Autowired private ProductActionKeyRepository keyRepository;
+    @Autowired private ApiRepository apiRepository;
+    @Autowired private ProductSecretRepository productSecretRepository;
 
     private final Properties properties;
     private final List<TaxCode> taxes;
@@ -82,7 +82,7 @@ public class ProductController {
 
         return result
                 .map(product -> new JsonResponse<>(HttpStatus.OK, "Product info", new ProductDto(
-                        product, Arrays.asList("fields", "fields.options", "category"),""
+                        product, Arrays.asList("fields", "fields.options", "category", "actions"),""
                 )))
                 .orElseGet(() -> new JsonResponse<>(HttpStatus.NOT_FOUND, "Product not found"));
     }
@@ -120,7 +120,8 @@ public class ProductController {
                 body.displayTax,
                 product.getId(),
                 categoryOpt.get(),
-                body.fields
+                body.fields,
+                body.actions
         );
         productRepository.save(entity);
         return new JsonResponse<>(HttpStatus.CREATED, "Created");
@@ -172,6 +173,7 @@ public class ProductController {
         entity.setFields(body.fields);
         entity.setTaxCode(body.taxCode);
         entity.setDisplayTax(body.displayTax);
+        entity.setActions(body.actions);
 
         product.update(productParams);
         productRepository.save(entity);
@@ -223,6 +225,124 @@ public class ProductController {
         return new JsonResponse<>(HttpStatus.OK, "Updated");
     }
 
-    public record ProductBody(int id, String name, String description, String nameInUrl, String image, double price,String taxCode, double displayTax,int categoryId, List<ProductFieldEntity> fields) {}
+    @PutMapping("/rcon")
+    public JsonResponse<Boolean> addRcon(@RequestBody RconEntity body) throws Exception {
+        body.setPassword(AesUtil.encrypt(body.getPassword(), properties.getAesSecretKey()));
+        rconRepository.save(body);
+        return new JsonResponse<>(HttpStatus.OK, "Added");
+    }
+
+    @PostMapping("/rcon")
+    public JsonResponse<Boolean> updateRcon(@RequestBody RconEntity body) throws Exception {
+        body.setPassword(AesUtil.encrypt(body.getPassword(), properties.getAesSecretKey()));
+        rconRepository.save(body);
+        return new JsonResponse<>(HttpStatus.OK, "Updated");
+    }
+
+    @DeleteMapping("/rcon")
+    public JsonResponse<Boolean> deleteRcon(@RequestBody Integer id) {
+        rconRepository.deleteById(id);
+        return new JsonResponse<>(HttpStatus.OK, "Deleted");
+    }
+
+    @GetMapping("/rcon")
+    public JsonResponse<List<RconDto>> getRcons() {
+        List<RconDto> result = new ArrayList<>();
+        rconRepository.findAll().forEach(entity -> {
+            result.add(new RconDto(entity));
+        });
+        return new JsonResponse<>(HttpStatus.OK, "List of available rcons", result);
+    }
+
+    @PutMapping("/api")
+    public JsonResponse<Boolean> addApi(@RequestBody ApiEntity body) throws Exception {
+        body.setToken(AesUtil.encrypt(body.getToken(), properties.getAesSecretKey()));
+        apiRepository.save(body);
+        return new JsonResponse<>(HttpStatus.OK, "Added");
+    }
+
+    @PostMapping("/api")
+    public JsonResponse<Boolean> updateApi(@RequestBody ApiEntity body) throws Exception {
+        body.setToken(AesUtil.encrypt(body.getToken(), properties.getAesSecretKey()));
+        apiRepository.save(body);
+        return new JsonResponse<>(HttpStatus.OK, "Updated");
+    }
+
+    @DeleteMapping("/api")
+    public JsonResponse<Boolean> deleteApi(@RequestBody Integer id) {
+        apiRepository.deleteById(id);
+        return new JsonResponse<>(HttpStatus.OK, "Deleted");
+    }
+
+    @GetMapping("/api")
+    public JsonResponse<List<ApiDto>> getApis() {
+        List<ApiDto> result = new ArrayList<>();
+        apiRepository.findAll().forEach(entity -> {
+            result.add(new ApiDto(entity));
+        });
+        return new JsonResponse<>(HttpStatus.OK, "List of available apis", result);
+    }
+
+    @PutMapping("/secret")
+    public JsonResponse<Boolean> addSecret(@RequestBody ProductSecretEntity body) throws Exception {
+        body.setSecret(AesUtil.encrypt(body.getSecret(), properties.getAesSecretKey()));
+        productSecretRepository.save(body);
+        return new JsonResponse<>(HttpStatus.OK, "Added");
+    }
+
+    @PostMapping("/secret")
+    public JsonResponse<Boolean> updateSecret(@RequestBody ProductSecretEntity body) throws Exception {
+        body.setSecret(AesUtil.encrypt(body.getSecret(), properties.getAesSecretKey()));
+        productSecretRepository.save(body);
+        return new JsonResponse<>(HttpStatus.OK, "Updated");
+    }
+
+    @DeleteMapping("/secret")
+    public JsonResponse<Boolean> deleteSecret(@RequestBody Integer id) {
+        productSecretRepository.deleteById(id);
+        return new JsonResponse<>(HttpStatus.OK, "Deleted");
+    }
+
+    @GetMapping("/secret")
+    public JsonResponse<List<ProductSecretDto>> getSecrets() {
+        List<ProductSecretDto> result = new ArrayList<>();
+        productSecretRepository.findAll().forEach(entity -> {
+            result.add(new ProductSecretDto(entity));
+        });
+        return new JsonResponse<>(HttpStatus.OK, "List of available secrets", result);
+    }
+
+    @PutMapping("/key")
+    public JsonResponse<Boolean> addKey(@RequestBody ProductActionKeyEntity body) throws Exception {
+        body.setKey(AesUtil.encrypt(body.getKey(), properties.getAesSecretKey()));
+        keyRepository.save(body);
+        return new JsonResponse<>(HttpStatus.OK, "Added");
+    }
+
+    @DeleteMapping("/key")
+    public JsonResponse<Boolean> deleteKey(@RequestBody Integer id) {
+        keyRepository.deleteById(id);
+        return new JsonResponse<>(HttpStatus.OK, "Deleted");
+    }
+
+    @GetMapping("/key")
+    public JsonResponse<List<ProductActionKeyDto>> getKeys() {
+        List<ProductActionKeyDto> result = new ArrayList<>();
+        keyRepository.findAll().forEach(entity -> {
+            result.add(new ProductActionKeyDto(entity));
+        });
+        return new JsonResponse<>(HttpStatus.OK, "List of available keys", result);
+    }
+
+    @GetMapping("/key/names")
+    public JsonResponse<List<String>> getKeyNames() {
+        List<String> result = new ArrayList<>();
+        keyRepository.findAll().forEach(entity -> {
+            if(!result.contains(entity.getKey())) result.add(entity.getKey());
+        });
+        return new JsonResponse<>(HttpStatus.OK, "List of available key names", result);
+    }
+
+    public record ProductBody(int id, String name, String description, String nameInUrl, String image, double price, String taxCode, double displayTax, int categoryId, List<ProductFieldEntity> fields, List<ProductActionEntity> actions) {}
     public record TaxData(boolean hasMore, List<TaxCode> codes) {}
 }
